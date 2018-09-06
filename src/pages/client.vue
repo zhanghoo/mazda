@@ -832,6 +832,7 @@ $chatTitleHeight = toRem(50);
                                     height: toRem(30);
                                     font-size: 14px;
                                     color: #2C2C2C;
+                                    cursor: pointer;
                                     border: 1px solid #C8C8C8;
                                     background: #fff;
                                     border-radius: 3px;

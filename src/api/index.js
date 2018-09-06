@@ -7,7 +7,9 @@ let config = {
     'user': 'http://dealers.faw-mazda.com/chat/index/getuser',
     'advisors': 'http://dealers.faw-mazda.com/chat/index/getadvisors',
     'saveMsg': 'http://dealers.faw-mazda.com/chat/index/savemsg',
-    'message': 'http://dealers.faw-mazda.com/api/dealer/message'
+    'message': 'http://dealers.faw-mazda.com/api/dealer/message',
+    'province': 'http://dealers.faw-mazda.com/api/dealer/get_province',
+    'city': 'http://dealers.faw-mazda.com/api/dealer/get_city'
 }
 
 // 登录
@@ -48,6 +50,26 @@ export function saveMsg(params) {
 }
 // 留言接口
 export function postMessage(data) {
-    let res = request(config.message)
+    let params = {
+        'dealer_id': 194,
+        'advisors_id': 0,
+        'province': data.province,
+        'city': data.city,
+        'name': data.name,
+        'mobile': data.phone,
+        'sex': data.gender,
+        'content': data.content
+    }
+    let res = request(config.message, params)
+    return res
+}
+// 获取省
+export function getProvince() {
+    let res = request(config.province)
+    return res
+}
+// 获取市
+export function getCity(province_id) {
+    let res = request(config.city, { province_id })
     return res
 }
