@@ -56,7 +56,7 @@
                                 <div class="conversation-content">
                                     <div class="content-list">
                                         <div class="content-item-wrap" v-for="(item, index) in conversationActiveData.msgs" :key="index">
-                                            <div class="item-time">
+                                            <div class="item-time" v-if="!item.ctime_ms_hide">
                                                 <div class="time-value">{{item.ctime_ms | formatTime}}</div>
                                             </div>
                                             <div class="item-text" v-if="item.content.from_id === conversationActiveData.username">
@@ -139,7 +139,8 @@ export default {
             previewDialogVisible: false,
             previewIndex: 0,
             previewImageList: [],
-            content: ''
+            content: '',
+            mergeTime_ms: 1000 * 60
         }
     },
     computed: {
@@ -228,6 +229,7 @@ export default {
                                     }
                                     return msg
                                 })
+                                this.mergeMessage(msgs, '', 'sync')
                                 this.$set(item, 'msgs', msgs)
                             }
                         })
@@ -244,14 +246,17 @@ export default {
         },
         // 发送文字
         handleSendSingleMsg() {
-            JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, this.content).then(res => {
-                console.log('发送文字消息：sendSingleMsg', res)
+            JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, this.content).then(data => {
+                console.log('发送文字消息：sendSingleMsg', data)
                 if (this.conversationActiveData.retractText) {
                     this.$set(conversation, 'retractText', '')
                     this.$set(conversation, 'retractTime', '')
                 }
-                this.conversationActiveData.msgs.push(res.msg)
+                let msg = data.msg
+                this.$set(msg, 'ctime_ms', data.res.ctime_ms)
+                this.mergeMessage(this.conversationActiveData.msgs, msg)
                 this.scrollBottom()
+                // 保存信息
                 let params = {
                     'kfusername': this.conversationActiveData.username,
                     'username': this.userInfo.username,
@@ -268,17 +273,19 @@ export default {
         // 发送图片消息
         handleSendSinglePic(ev) {
             let imgFile = ev.target.files[0]
-            JIM.sendSinglePic(this.initData.appkey, this.conversationActiveData.username, imgFile).then((res) => {
-                console.log('发送图片消息：sendSinglePic', res)
-                let msg = res.msg
+            JIM.sendSinglePic(this.initData.appkey, this.conversationActiveData.username, imgFile).then(data => {
+                console.log('发送图片消息：sendSinglePic', data)
+                let msg = data.msg
                 JIM.getResource(msg.content.msg_body.media_id).then(URL => {
                     msg['local_url'] = URL
                     if (this.conversationActiveData.retractText) {
                         this.$set(conversation, 'retractText', '')
                         this.$set(conversation, 'retractTime', '')
                     }
-                    this.conversationActiveData.msgs.push(msg)
+                    this.$set(msg, 'ctime_ms', data.res.ctime_ms)
+                    this.mergeMessage(this.conversationActiveData.msgs, msg)
                     this.scrollBottom()
+                    // 保存信息
                     let params = {
                         'kfusername': this.conversationActiveData.username,
                         'username': this.userInfo.username,
@@ -305,7 +312,7 @@ export default {
                             this.$set(conversation, 'retractText', '')
                             this.$set(conversation, 'retractTime', '')
                         }
-                        conversation.msgs.push(msg)
+                        this.mergeMessage(conversation.msgs, msg)
                         // 当前对话框 ？已读回执 ： 未读 +1
                         if (conversation.username === this.conversationActiveData.username) {
                             this.handleMsgReport(conversation.username, [res.rid])
@@ -374,6 +381,7 @@ export default {
             this.conversationList.some((conversation, index) => {
                 if (conversation.username === item.username) {
                     this.conversationActiveIndex = index
+                    this.scrollBottom()
                     return true
                 }
             })
@@ -468,6 +476,26 @@ export default {
                 let conversationHeight = this.$el.querySelector('.content-list').offsetHeight
                 this.$el.querySelector('.conversation-content').scrollTop = conversationHeight
             })
+        },
+        // 合并短间隔消息
+        mergeMessage(msgs, msg, type) {
+            if (type === 'sync') {
+                for (let index = msgs.length - 1; index > 0; index--) {
+                    if (msgs[index].ctime_ms - msgs[index - 1].ctime_ms <= this.mergeTime_ms) {
+                        this.$set(msgs[index], 'ctime_ms_hide', true)
+                    }
+                }
+            } else {
+                for (let index = msgs.length - 1; index > 0; index--) {
+                    if (!msgs[index].ctime_ms_hide) {
+                        if (msg.ctime_ms - msgs[index].ctime_ms < this.mergeTime_ms) {
+                            this.$set(msg, 'ctime_ms_hide', true)
+                        }
+                        msgs.push(msg)
+                        break
+                    }
+                }
+            }
         }
     }
 }
@@ -700,13 +728,14 @@ $chatTitleHeight = toRem(50);
                                     .content-list {
                                         width: 100%;
                                         .content-item-wrap {
-                                            padding: toRem(30) 0 toRem(20);
                                             &:first-child {
-                                                padding: toRem(20) 0;
+                                                .item-time {
+                                                    margin-top: toRem(20);
+                                                }
                                             }
                                             .item-time {
                                                 flex-center();
-                                                margin-bottom: toRem(20);
+                                                margin-top: toRem(30);
                                                 .time-value {
                                                     font-size: 12px;
                                                     color: #999;
@@ -719,6 +748,7 @@ $chatTitleHeight = toRem(50);
                                             }
                                             .item-text {
                                                 display: flex;
+                                                padding: toRem(20) 0;
                                                 &:hover {
                                                     .item-more {
                                                         .el-icon-more {
