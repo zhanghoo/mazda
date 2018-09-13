@@ -45,6 +45,7 @@ var JimInit = {
     register: function (form) {
         return new Promise((resolve, reject) => {
             JIM.register(form).onSuccess(res => {
+                console.log('注册成功')
                 JimApi.login(form)
                 resolve(res)
             }).onFail(err => {
@@ -69,14 +70,6 @@ var JimConversation = {
     onSyncConversation: function () {
         return new Promise((resolve, reject) => {
             JIM.onSyncConversation(data => {
-                resolve(data)
-            })
-        })
-    },
-    // 获取会话已读消息
-    onSyncMsgReceipt: function () {
-        return new Promise((resolve, reject) => {
-            JIM.onSyncMsgReceipt(data => {
                 resolve(data)
             })
         })

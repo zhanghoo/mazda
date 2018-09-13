@@ -14,14 +14,6 @@ let config = {
 
 // 登录
 export function getLogin(form) {
-    // 模拟登录
-    // return new Promise((resolve, reject) => {
-    // if (form.username === 'uncleLian' && form.password === '123456') {
-    //     resolve('验证成功')
-    // } else {
-    //     reject('错误')
-    // }
-    // })
     let res = request(config.login, form)
     return res
 }

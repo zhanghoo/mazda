@@ -10,7 +10,7 @@
                     </span>
                 </el-form-item>
                 <el-form-item class="password">
-                    <el-input v-model="form.password" placeholder="请输入密码" />
+                    <el-input v-model="form.password" placeholder="请输入密码" type="password" />
                     <span class="input-icon prepend-icon">
                         <i class="my-icon-lock"></i>
                     </span>
@@ -24,7 +24,7 @@
     </div>
 </template>
 <script>
-import { getLogin, getInitParams } from '@/api'
+import { getInitParams } from '@/api'
 import JIM from '@/api/jim'
 export default {
     name: 'login',
@@ -40,24 +40,28 @@ export default {
     methods: {
         verify() {
             if (this.form.username && this.form.password) {
-                this.login()
+                this.initJIM()
             }
         },
-        login() {
-            getLogin(this.form).then(res => {
-                this.$cache.setToken('123456789')
-                this.init()
-            }).catch(() => {
-                this.$message.error('账号密码错误')
-            })
-        },
-        async init() {
-            let res = await getInitParams()
-            JIM.init(res.data).then(() => {
-                console.log('JIM初始化完成')
-                JIM.login(this.form).then(() => {
-                    console.log('JIM登录成功')
-                    this.$router.push('/')
+        // 初始化极光
+        initJIM() {
+            getInitParams().then(res => {
+                console.log('获取极光初始化参数：', res)
+                this.$store.commit('SET_INIT_DATA', res.data)
+                JIM.init(res.data).then(() => {
+                    console.log('账号登录参数', this.form)
+                    JIM.login(this.form).then(info => {
+                        console.log('登录成功', info)
+                        JIM.getUserInfo(this.form.username, res.data.appkey).then(res => {
+                            console.log('获取用户信息', res)
+                            this.$store.commit('SET_USER_INFO', res.user_info)
+                            this.$cache.setToken('123456')
+                            this.$router.push({ name: 'index' })
+                        })
+                    }).catch(err => {
+                        this.$message.error('登录失败')
+                        console.log('登录失败', err)
+                    })
                 })
             })
         }

@@ -22,7 +22,7 @@
                             <el-input type="textarea" v-model="form.content" placeholder="欢迎使用金牌导购服务功能，请在对话框内描述您的问题，我们会尽快与您取得联系哦~(服务时段暂为工作日9:00-16:00)" resize="none" :rows="12" autofocus />
                         </div>
                     </div>
-                    <div class="box-wrap">
+                    <div class="box-wrap form">
                         <div class="wrap-title">
                             <i class="title-icon my-icon-client"></i>
                             <div class="title-label">客户资料</div>
@@ -322,6 +322,104 @@ export default {
                         min-width: 90px;
                         padding: 8px 20px;
                         margin-left: 24px;
+                    }
+                }
+            }
+        }
+    }
+}
+@media screen and (max-width: 980px) {
+    #message {
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        .message-container {
+            width: 100%;
+            height: 100%;
+            .message-header {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                font-size: 14px;
+                height: 45px;
+            }
+            .message-main {
+                .main-menu {
+                    display: none;
+                }
+                .main-box {
+                    display: flex;
+                    flex-direction: column;
+                    .box-header {
+                        height: 38px;
+                        color: #666;
+                        font-size: 13px;
+                        i {
+                            color: inherit;
+                            font-size: 20px;
+                        }
+                    }
+                    .box-wrap {
+                        &.form {
+                            position: relative;
+                            flex: 1;
+                            .wrap-form {
+                                padding: 10px 20px;
+                                .wrap-form-list {
+                                    display: flex;
+                                    align-items: flex-start;
+                                    justify-content: flex-start;
+                                    flex-direction: column;
+                                    margin-bottom: 0;
+                                    .wrap-form-item {
+                                        width: 100%;
+                                        padding: 5px 0;
+                                        margin: 0;
+                                        .item-label {
+                                            font-size: 14px;
+                                            text-align: left;
+                                        }
+                                        .el-input .el-input__inner {
+                                            color: #333;
+                                            height: 36px;
+                                            line-height: 36px;
+                                            background: #fff;
+                                            border-radius: 6px;
+                                            &::placeholder {
+                                                color: #333;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .wrap-title {
+                            height: 40px;
+                            font-size: 12px;
+                            i {
+                                font-size: 18px;
+                            }
+                        }
+                        .el-textarea {
+                            height: 150px;
+                            .el-textarea__inner {
+                                height: 100%;
+                                line-height: 1.8;
+                                padding: 10px 25px;
+                            }
+                        }
+                        .wrap-tip {
+                            position: absolute;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                            width: 100%;
+                            padding: 0 20px 10px;
+                            margin: 0;
+                        }
+                    }
+                    .box-tool {
+                        height: 60px;
                     }
                 }
             }

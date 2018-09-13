@@ -25,50 +25,7 @@
             <div class="index-right">
                 <div class="index-title">马自达在线顾问</div>
                 <div class="right-container">
-                    <!-- user -->
-                    <div class="index-user">
-                        <div class="user-item" v-for="(item, index) in userList" :key="index" :class="{'active': userActive === index}" @click="userActive = index">
-                            <img class="item-avatar" :src="item.avatar">
-                            <div class="item-info">
-                                <div class="info-header">
-                                    <div class="info-username">{{item.username}}</div>
-                                    <div class="info-time">{{item.time}}</div>
-                                </div>
-                                <div class="info-content">{{item.lastContent}}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- conversation -->
-                    <div class="index-conversation">
-                        <div class="conversation-container" v-if="userList[userActive]">
-                            <div class="conversation-main">
-                                <div class="conversation-title">{{userList[userActive].username}}</div>
-                                <div class="conversation-content">
-                                    <!-- content -->
-                                    <div class="content-item text" v-for="(item, index) in 20" :key="index">
-                                        <img class="item-avatar" :src="userList[userActive].avatar">
-                                        <div class="item-content">{{userList[userActive].lastContent}}</div>
-                                        <div class="item-more el-icon-more"></div>
-                                    </div>
-                                    <!-- self content -->
-                                    <div class="content-item self" v-for="(item, index) in 20" :key="index + 'e'">
-                                        <div class="item-more el-icon-more"></div>
-                                        <div class="item-content">{{userList[userActive].lastContent}}</div>
-                                        <img class="item-avatar" :src="userList[userActive].avatar">
-                                    </div>
-                                    <!-- time -->
-                                    <div class="content-item time" v-for="(item, index) in 5" :key="index + 'q'">
-                                        <div class="item-time">{{userList[userActive].time}}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="conversation-publish">
-                                <div class="publish-tool"></div>
-                                <div class="publish-content"></div>
-                            </div>
-                        </div>
-                        <div class="conversation-welcome" v-else>欢迎</div>
-                    </div>
+                    <my-chat v-if="initChat" :initData="$store.state.initData" :userInfo="$store.state.userInfo"></my-chat>
                 </div>
             </div>
         </div>
@@ -81,12 +38,11 @@ export default {
     data() {
         return {
             tabsActive: 0,
-            userActive: 0,
-            userList: [],
-            isRegister: false
+            initChat: false
         }
     },
     mounted() {
+        this.initChat = true
     },
     methods: {
         logOut() {
