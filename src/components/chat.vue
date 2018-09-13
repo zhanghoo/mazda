@@ -112,9 +112,9 @@ export default {
     components: { myEmoji },
     props: {
         json: '',
-        initData: '',
-        userInfo: '',
-        activeUser: {},
+        initData: null,
+        userInfo: null,
+        activeUser: null,
         mergeTime_ms: {
             type: Number,
             default: () => 3 * 60 * 1000
@@ -135,7 +135,11 @@ export default {
     computed: {
         // 当前对话框数据
         conversationActiveData() {
-            return this.conversationList[this.conversationActiveIndex]
+            if (this.conversationList) {
+                return this.conversationList[this.conversationActiveIndex]
+            } else {
+                return ''
+            }
         }
     },
     watch: {
@@ -318,7 +322,7 @@ export default {
         },
         // 打开对话框
         handleHistoryActive(activeUser) {
-            if (activeUser.username) {
+            if (activeUser && activeUser.username) {
                 let conversation = this.conversationFind(activeUser.username)
                 let index = this.conversationList.findIndex(item => item.username === activeUser.username)
                 if (conversation && index > -1) {

@@ -4,7 +4,7 @@
             <div class="dialog-main">
                 <img class="main-avatar" v-if="userInfo.avatar" :src="userInfo.avatar">
                 <img class="main-avatar" v-else src="~@/assets/img/single-avatar.svg">
-                <div class="main-nickname" v-if="userInfo.realname">{{userInfo.realname}}</div>
+                <div class="main-nickname" v-if="userInfo.realname || userInfo.nickname">{{userInfo.realname || userInfo.nickname}}</div>
                 <div class="main-nickname" v-else>匿名用户{{userInfo.username.slice(0, 4)}}</div>
             </div>
             <div class="dialog-detail">

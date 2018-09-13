@@ -56,7 +56,7 @@ export default {
                     icon: 'my-icon-conversation',
                     label: '历史会话'
                 }
-            ], // tab选项
+            ],
             tabActive: 0,
             customList: '', // 客服列表
             conversationList: [], // 会话列表
@@ -264,14 +264,14 @@ $chatTitleHeight = toRem(50);
                         cursor: pointer;
                         height: 46px;
                         margin-bottom: 15px;
-                        .item-label{
-                            display: none;
-                        }
                         &.active {
                             background: $appColor;
                         }
                         &:hover {
                             background: $appColor;
+                        }
+                        .item-label {
+                            display: none;
                         }
                     }
                 }
@@ -619,7 +619,9 @@ $chatTitleHeight = toRem(50);
                     display: none;
                 }
                 .menu-tabs {
-                    flex-center();
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-around;
                     width: 100%;
                     height: 100%;
                     .tabs-item {
@@ -628,7 +630,6 @@ $chatTitleHeight = toRem(50);
                         justify-content: center;
                         text-align: center;
                         height: 100%;
-                        margin: 0 32px;
                         padding: 0 18px;
                         color: #fff;
                         font-size: 24px;
@@ -636,6 +637,7 @@ $chatTitleHeight = toRem(50);
                             background: $appColor;
                         }
                         .item-label {
+                            white-space: nowrap;
                             font-size: 12px;
                             margin-top: 2px;
                         }
