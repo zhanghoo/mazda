@@ -79,10 +79,10 @@ export default {
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 100;
-        width: toRem(460);
+        width: 460px;
         min-height: 400px;
         border-radius: 6px;
-        padding: 0 toRem(45) toRem(32);
+        padding: 0 45px 32px;
         margin: 0 auto;
         background: url('~@/assets/img/login_bg.png') top left no-repeat;
         background-size: 100% 100%;
@@ -90,7 +90,7 @@ export default {
         .login-title {
             flex-center();
             width: 100%;
-            height: toRem(145);
+            height: 145px;
             background: url('~@/assets/img/login_logo.png') no-repeat center center;
             background-size: 66%;
         }
@@ -105,7 +105,7 @@ export default {
                     height: 42px;
                     line-height: 42px;
                     border: 1px solid #6D6D6D;
-                    border-radius: toRem(50);
+                    border-radius: 50px;
                     &:focus {
                         border: 1px solid $appColor;
                     }
@@ -155,8 +155,21 @@ export default {
                     line-height: 42px;
                     background-color: #DCDCDC;
                     border-color: #AFAFAF;
-                    border-radius: toRem(100);
+                    border-radius: 100px;
                 }
+            }
+        }
+    }
+}
+@media screen and (max-width: 980px) {
+    #login {
+        .login-container {
+            width: 100%;
+            min-height: auto;
+            padding: 30px 16px 50px;;
+            .login-title{
+                height: 80px;
+                margin-bottom: 20px;
             }
         }
     }
