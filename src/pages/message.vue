@@ -141,8 +141,8 @@ export default {
                 this.$message.error('请选择性别')
             } else {
                 postMessage(this.form).then(res => {
-                    console.log(res)
-                    this.$message('留言成功，我们会尽快联系你')
+                    console.log('留言：', res)
+                    this.$message.success('留言成功，我们会尽快联系你')
                 })
             }
         },

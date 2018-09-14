@@ -1,11 +1,13 @@
 import userDialog from '@/components/userDialog'
-import myPreview from '@/components/preview'
 import loginDialog from '@/components/loginDialog'
+import tipDialog from '@/components/tipDialog'
+import myPreview from '@/components/preview'
 import myChat from '@/components/chat'
 
 export default {
     userDialog,
-    myPreview,
     loginDialog,
+    tipDialog,
+    myPreview,
     myChat
 }

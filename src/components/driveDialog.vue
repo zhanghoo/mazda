@@ -49,6 +49,7 @@
     </el-dialog>
 </template>
 <script>
+// import { getDrive } from '@/api'
 export default {
     name: 'drive',
     data() {
@@ -63,6 +64,18 @@ export default {
                 this.$emit('close', false)
             }
         }
+    },
+    mounted() {
+        // let params = {
+        //     advisors_id: 14,
+        //     p: 1,
+        //     num: 20
+        // }
+        // getDrive(params).then(res => {
+        //     console.log('试驾清单', res)
+        // }).catch(err => {
+        //     console.log(err)
+        // })
     }
 }
 </script>
@@ -165,7 +178,7 @@ export default {
                     display: flex;
                     flex-direction: column;
                     height: 100%;
-                    .drive-header{
+                    .drive-header {
                         padding: 0 16px;
                     }
                     .drive-content {

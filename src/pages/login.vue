@@ -24,7 +24,7 @@
     </div>
 </template>
 <script>
-import { getInitParams } from '@/api'
+import { getInitParams, kfuLogin, getKfuId } from '@/api'
 import JIM from '@/api/jim'
 export default {
     name: 'login',
@@ -50,13 +50,20 @@ export default {
                 this.$store.commit('SET_INIT_DATA', res.data)
                 JIM.init(res.data).then(() => {
                     console.log('账号登录参数', this.form)
-                    JIM.login(this.form).then(info => {
-                        console.log('登录成功', info)
-                        JIM.getUserInfo(this.form.username, res.data.appkey).then(res => {
-                            console.log('获取用户信息', res)
-                            this.$store.commit('SET_USER_INFO', res.user_info)
-                            this.$cache.setToken('123456')
-                            this.$router.push({ name: 'index' })
+                    JIM.login(this.form).then(login => {
+                        console.log('登录成功', login)
+                        JIM.getUserInfo(this.form.username, res.data.appkey).then(info => {
+                            console.log('获取用户信息', info)
+                            kfuLogin(this.form.username).then(login => {
+                                console.log('客服登录', login)
+                                getKfuId(this.form.username).then(id => {
+                                    console.log('客服ID', id)
+                                    info.user_info['id'] = id.responseBody
+                                    this.$store.commit('SET_USER_INFO', info.user_info)
+                                    this.$cache.setToken('123456')
+                                    this.$router.push({ name: 'index' })
+                                })
+                            })
                         })
                     }).catch(err => {
                         this.$message.error('登录失败')
@@ -166,8 +173,8 @@ export default {
         .login-container {
             width: 100%;
             min-height: auto;
-            padding: 30px 16px 50px;;
-            .login-title{
+            padding: 30px 16px 50px;
+            .login-title {
                 height: 80px;
                 margin-bottom: 20px;
             }

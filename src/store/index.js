@@ -1,5 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import Router from '@/router'
+import cache from '@/utils/cache'
+import JIM from '@/api/jim'
+import { kfuLogin, kfuLoginOut } from '@/api'
 
 Vue.use(Vuex)
 
@@ -21,6 +25,19 @@ const mutations = {
 }
 
 const actions = {
+    kfuLogin({ state }) {
+        kfuLogin(state.userInfo.username).then(res => {
+            console.log('客服登录', res)
+        })
+    },
+    kfuLoginOut({ state }) {
+        kfuLoginOut(state.userInfo.username).then(res => {
+            console.log('客服退出登录', res)
+            JIM.loginOut()
+            cache.removeToken()
+            Router.push({ name: 'login' })
+        })
+    }
 }
 
 export default new Vuex.Store({

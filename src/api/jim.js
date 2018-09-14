@@ -86,6 +86,11 @@ var JimConversation = {
         JIM.onEventNotification(data => {
             fn && fn(data)
         })
+    },
+    onDisconnect: function (fn) {
+        JIM.onDisconnect(data => {
+            fn && fn(data)
+        })
     }
 }
 // 聊天相关
@@ -175,6 +180,7 @@ var JimUtils = {
             })
         })
     },
+    // 获取用户信息
     getUserInfo: function (username, appkey) {
         return new Promise((resolve, reject) => {
             JIM.getUserInfo({

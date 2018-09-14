@@ -28,7 +28,7 @@
             <div class="index-right">
                 <div class="index-title">马自达在线顾问</div>
                 <div class="right-container">
-                    <my-chat v-if="initChat" :initData="$store.state.initData" :userInfo="$store.state.userInfo"></my-chat>
+                    <my-chat v-if="initChat" chatType="kfu" :initData="$store.state.initData" :userInfo="$store.state.userInfo" :json="conversationList"></my-chat>
                 </div>
             </div>
         </div>
@@ -38,6 +38,7 @@
 </template>
 <script>
 import JIM from '@/api/jim'
+import { kfuLoginOut } from '@/api'
 import driveDialog from '@/components/driveDialog'
 export default {
     name: 'index',
@@ -57,13 +58,55 @@ export default {
             tabActive: 0,
             initChat: false,
             userDialogVisible: false,
-            driveDialogVisible: false
+            driveDialogVisible: false,
+            conversationList: []
         }
     },
     mounted() {
         this.initChat = true
+        this.syncConversation()
     },
     methods: {
+        // 获取漫游信息
+        syncConversation() {
+            JIM.getConversation().then(list => {
+                console.log('同步会话列表 syncConversationList', list)
+                this.conversationList = list.conversations
+                // this.conversationList.forEach(item => {
+                //     contents.forEach(content => {
+                //         // 同步已读消息
+                //         content.receipt_msgs.forEach(receipt_msg => {
+                //             content.msgs.some(msg => {
+                //                 if (receipt_msg.msg_id === msg.msg_id) {
+                //                     this.$set(msg, 'read', true)
+                //                     return true
+                //                 }
+                //             })
+                //         })
+                //         if (item.username === content.from_username) {
+                //             let msgs = content.msgs.map(msg => {
+                //                 // 获取图片资源路径
+                //                 if (msg.content.msg_body.media_id) {
+                //                     JIM.getResource(msg.content.msg_body.media_id).then(url => {
+                //                         this.$set(msg, 'local_url', url)
+                //                     })
+                //                 }
+                //                 return msg
+                //             })
+                //             // 合并短时间消息
+                //             for (let index = msgs.length - 1; index > 0; index--) {
+                //                 if (msgs[index].ctime_ms - msgs[index - 1].ctime_ms <= this.mergeTime_ms) {
+                //                     this.$set(msgs[index], 'ctime_ms_hide', true)
+                //                 }
+                //             }
+                //             this.$set(item, 'msgs', msgs)
+                //         }
+                //     })
+                // })
+                // // 排序
+                // this.conversationList.sort(compare('des', 'mtime'))
+            })
+        },
         handleTabActive(item, index) {
             this.tabActive = index
             if (index === 1) {
@@ -75,6 +118,9 @@ export default {
             this.tabActive = 0
         },
         logOut() {
+            kfuLoginOut(this.$store.state.userInfo.username).then(loginOut => {
+                console.log('客服退出登录', loginOut)
+            })
             JIM.loginOut().then(() => {
                 console.log('JIM退出登录')
                 this.$cache.removeToken()

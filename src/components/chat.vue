@@ -100,17 +100,23 @@
             </div>
         </div>
         <my-preview v-if="previewDialogVisible" :imageList=previewImageList :previewIndex="previewIndex" @close="previewDialogVisible = false"></my-preview>
+        <!-- tip -->
+        <tip-dialog v-if="tipDialogVisible" @close="tipDialogVisible = false" :type="tipDialogType" @reLogin="reLogin" @logOut="$store.dispatch('kfuLoginOut')"></tip-dialog>
     </div>
 </template>
 <script>
 import JIM from '@/api/jim'
 import { formatTime } from '@/utils'
-import { saveMsg } from '@/api'
+import { saveMsg, getHistory, kfuLoginStatus, kfuInfo } from '@/api'
 import myEmoji from '@/components/emoji'
 export default {
     name: 'chat',
     components: { myEmoji },
     props: {
+        chatType: {
+            type: String,
+            default: () => ''
+        },
         json: '',
         initData: null,
         userInfo: null,
@@ -129,7 +135,9 @@ export default {
             previewDialogVisible: false,
             previewIndex: 0,
             previewImageList: [],
-            wecomeBefore: '感谢您关注官方体验平台，平台为您提供操作简洁的在线赏车订车服务，并可通过金牌导购答疑解惑，使您在家中就能轻松选择预订爱车。'
+            wecomeBefore: '感谢您关注官方体验平台，平台为您提供操作简洁的在线赏车订车服务，并可通过金牌导购答疑解惑，使您在家中就能轻松选择预订爱车。',
+            tipDialogType: 0,
+            tipDialogVisible: false
         }
     },
     computed: {
@@ -139,6 +147,13 @@ export default {
                 return this.conversationList[this.conversationActiveIndex]
             } else {
                 return ''
+            }
+        },
+        isKfu() {
+            if (this.chatType) {
+                return this.chatType === 'kfu'
+            } else {
+                return false
             }
         }
     },
@@ -211,8 +226,14 @@ export default {
         onEventNotification() {
             JIM.onEventNotification(res => {
                 console.log('业务事件监听 onEventNotification : ', res)
+                let event_type = res.event_type
+                // 被迫下线
+                if (event_type === 1) {
+                    this.tipDialogType = 1
+                    this.tipDialogVisible = true
+                }
                 // 消息撤回事件
-                if (res.event_type === 55) {
+                if (event_type === 55) {
                     let conversation = this.conversationFind(res.from_username)
                     if (conversation) {
                         conversation.msgs.some((item, index) => {
@@ -224,6 +245,12 @@ export default {
                         this.$set(conversation, 'retractTime', res.ctime_ms)
                     }
                 }
+            })
+        },
+        onDisconnect() {
+            JIM.onDisconnect(res => {
+                this.tipDialogType = 0
+                this.tipDialogVisible = true
             })
         },
         // 发送文字消息
@@ -323,6 +350,18 @@ export default {
         // 打开对话框
         handleHistoryActive(activeUser) {
             if (activeUser && activeUser.username) {
+                getHistory(activeUser.username).then(res => {
+                    console.log('history', res)
+                })
+                kfuInfo(14).then(info => {
+                    console.log('单个客服信息', info)
+                })
+                kfuLoginStatus(activeUser.username).then(status => {
+                    console.log('客服状态查询', status)
+                    // if (status && !status.online) {
+                    //     this.$router.push({name: 'message'})
+                    // }
+                })
                 let conversation = this.conversationFind(activeUser.username)
                 let index = this.conversationList.findIndex(item => item.username === activeUser.username)
                 if (conversation && index > -1) {
@@ -439,6 +478,15 @@ export default {
         },
         handleEmojiSelected(emoji) {
             this.content += emoji
+        },
+        // 重新登录
+        reLogin() {
+            if (this.isKfu) {
+                JIM.loginOut()
+                window.location.reload()
+            } else {
+                window.location.reload()
+            }
         }
     }
 }
@@ -832,7 +880,7 @@ export default {
                 color: #fff;
                 font-size: 12px;
                 padding: 0 15px;
-                .backBtn-icon{
+                .backBtn-icon {
                     font-size: 26px;
                     margin-bottom: 2px;
                 }
