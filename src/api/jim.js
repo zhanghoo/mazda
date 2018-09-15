@@ -45,6 +45,7 @@ var JimInit = {
     register: function (form) {
         return new Promise((resolve, reject) => {
             JIM.register(form).onSuccess(res => {
+                console.log('注册成功')
                 JimApi.login(form)
                 resolve(res)
             }).onFail(err => {
@@ -73,14 +74,6 @@ var JimConversation = {
             })
         })
     },
-    // 获取会话已读消息
-    onSyncMsgReceipt: function () {
-        return new Promise((resolve, reject) => {
-            JIM.onSyncMsgReceipt(data => {
-                resolve(data)
-            })
-        })
-    },
     // 重置会话未读数
     resetUnreadCount: function (username) {
         return new Promise((resolve, reject) => {
@@ -91,6 +84,11 @@ var JimConversation = {
     // 业务事件监听
     onEventNotification: function (fn) {
         JIM.onEventNotification(data => {
+            fn && fn(data)
+        })
+    },
+    onDisconnect: function (fn) {
+        JIM.onDisconnect(data => {
             fn && fn(data)
         })
     }
@@ -182,6 +180,7 @@ var JimUtils = {
             })
         })
     },
+    // 获取用户信息
     getUserInfo: function (username, appkey) {
         return new Promise((resolve, reject) => {
             JIM.getUserInfo({

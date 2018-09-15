@@ -2,8 +2,10 @@
     <el-dialog class="user-dialog" title="" :visible.sync="visible" width="23%">
         <div class="my-dialog-container" v-if="userInfo">
             <div class="dialog-main">
-                <img class="main-avatar" :src="userInfo.avatar">
-                <div class="main-nickname">匿名用户{{userInfo.username.slice(0, 4)}}</div>
+                <img class="main-avatar" v-if="userInfo.avatar" :src="userInfo.avatar">
+                <img class="main-avatar" v-else src="~@/assets/img/single-avatar.svg">
+                <div class="main-nickname" v-if="userInfo.realname || userInfo.nickname">{{userInfo.realname || userInfo.nickname}}</div>
+                <div class="main-nickname" v-else>匿名用户{{userInfo.username.slice(0, 4)}}</div>
             </div>
             <div class="dialog-detail">
                 <div class="detail-item">
@@ -12,7 +14,8 @@
                 </div>
                 <div class="detail-item">
                     <div class="item-label">昵 称：</div>
-                    <div class="item-value">匿名用户{{userInfo.username.slice(0, 4)}}</div>
+                    <div class="item-value" v-if="userInfo.nickname">{{userInfo.nickname}}</div>
+                    <div class="item-value" v-else>匿名用户{{userInfo.username.slice(0, 4)}}</div>
                 </div>
                 <div class="detail-item">
                     <div class="item-label">性 别：</div>

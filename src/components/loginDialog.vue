@@ -9,7 +9,7 @@
                 </span>
             </el-form-item>
             <el-form-item class="password">
-                <el-input v-model="form.password" placeholder="请输入密码" />
+                <el-input v-model="form.password" placeholder="请输入密码" type="password" />
                 <span class="input-icon prepend-icon">
                     <i class="my-icon-lock"></i>
                 </span>
@@ -32,8 +32,8 @@ export default {
         return {
             visible: true,
             form: {
-                username: 'huzhou03',
-                password: '123456'
+                username: '18820147127',
+                password: 'LIAN18820147127'
             }
         }
     },
@@ -51,10 +51,8 @@ export default {
             } else if (!this.form.password) {
                 this.$message.error('请输入密码')
             } else {
-                this.login()
+                this.$emit('onSubmit', this.form)
             }
-        },
-        login() {
         }
     }
 }

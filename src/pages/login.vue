@@ -10,7 +10,7 @@
                     </span>
                 </el-form-item>
                 <el-form-item class="password">
-                    <el-input v-model="form.password" placeholder="请输入密码" />
+                    <el-input v-model="form.password" placeholder="请输入密码" type="password" />
                     <span class="input-icon prepend-icon">
                         <i class="my-icon-lock"></i>
                     </span>
@@ -24,7 +24,7 @@
     </div>
 </template>
 <script>
-import { getLogin, getInitParams } from '@/api'
+import { getInitParams, kfuLogin, getKfuId } from '@/api'
 import JIM from '@/api/jim'
 export default {
     name: 'login',
@@ -40,24 +40,35 @@ export default {
     methods: {
         verify() {
             if (this.form.username && this.form.password) {
-                this.login()
+                this.initJIM()
             }
         },
-        login() {
-            getLogin(this.form).then(res => {
-                this.$cache.setToken('123456789')
-                this.init()
-            }).catch(() => {
-                this.$message.error('账号密码错误')
-            })
-        },
-        async init() {
-            let res = await getInitParams()
-            JIM.init(res.data).then(() => {
-                console.log('JIM初始化完成')
-                JIM.login(this.form).then(() => {
-                    console.log('JIM登录成功')
-                    this.$router.push('/')
+        // 初始化极光
+        initJIM() {
+            getInitParams().then(res => {
+                console.log('获取极光初始化参数：', res)
+                this.$store.commit('SET_INIT_DATA', res.data)
+                JIM.init(res.data).then(() => {
+                    console.log('账号登录参数', this.form)
+                    JIM.login(this.form).then(login => {
+                        console.log('登录成功', login)
+                        JIM.getUserInfo(this.form.username, res.data.appkey).then(info => {
+                            console.log('获取用户信息', info)
+                            kfuLogin(this.form.username).then(login => {
+                                console.log('客服登录', login)
+                                getKfuId(this.form.username).then(id => {
+                                    console.log('客服ID', id)
+                                    info.user_info['id'] = id.responseBody
+                                    this.$store.commit('SET_USER_INFO', info.user_info)
+                                    this.$cache.setToken('123456')
+                                    this.$router.push({ name: 'index' })
+                                })
+                            })
+                        })
+                    }).catch(err => {
+                        this.$message.error('登录失败')
+                        console.log('登录失败', err)
+                    })
                 })
             })
         }
@@ -75,10 +86,10 @@ export default {
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 100;
-        width: toRem(460);
+        width: 460px;
         min-height: 400px;
         border-radius: 6px;
-        padding: 0 toRem(45) toRem(32);
+        padding: 0 45px 32px;
         margin: 0 auto;
         background: url('~@/assets/img/login_bg.png') top left no-repeat;
         background-size: 100% 100%;
@@ -86,7 +97,7 @@ export default {
         .login-title {
             flex-center();
             width: 100%;
-            height: toRem(145);
+            height: 145px;
             background: url('~@/assets/img/login_logo.png') no-repeat center center;
             background-size: 66%;
         }
@@ -101,7 +112,7 @@ export default {
                     height: 42px;
                     line-height: 42px;
                     border: 1px solid #6D6D6D;
-                    border-radius: toRem(50);
+                    border-radius: 50px;
                     &:focus {
                         border: 1px solid $appColor;
                     }
@@ -151,8 +162,21 @@ export default {
                     line-height: 42px;
                     background-color: #DCDCDC;
                     border-color: #AFAFAF;
-                    border-radius: toRem(100);
+                    border-radius: 100px;
                 }
+            }
+        }
+    }
+}
+@media screen and (max-width: 980px) {
+    #login {
+        .login-container {
+            width: 100%;
+            min-height: auto;
+            padding: 30px 16px 50px;
+            .login-title {
+                height: 80px;
+                margin-bottom: 20px;
             }
         }
     }

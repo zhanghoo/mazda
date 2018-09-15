@@ -20,3 +20,13 @@ body{
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
+@media screen and (max-width: 980px) {
+    body{
+        overflow: hidden;
+    }
+    .el-message{
+        width: 90%;
+        min-width: 90%;
+    }
+}

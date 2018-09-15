@@ -14,17 +14,15 @@ export function formatTime(dateTimeStamp) {
     var result
     var minute = 1000 * 60
     var hour = minute * 60
-    var day = hour * 24
-    var month = day * 30
-    var now = new Date().getTime()
+    // var day = hour * 24
+    // var month = day * 30
+    var nowTime = new Date()
+    var diff_hours = nowTime.getHours()
+
     // 时间差
-    var diffValue = now - dateTimeStamp
+    var diffValue = nowTime.getTime() - dateTimeStamp
     if (diffValue < 0) { return }
-    var monthC = diffValue / month
-    // var weekC = diffValue / (7 * day)
-    var dayC = diffValue / day
     var hourC = diffValue / hour
-    var minC = diffValue / minute
 
     // 数值补0方法
     var zero = function (value) {
@@ -38,24 +36,26 @@ export function formatTime(dateTimeStamp) {
     var _year = date.getFullYear()
     var _month = zero(date.getMonth() + 1)
     var _day = zero(date.getDate())
+    var _week = date.getDay()
     var _hours = zero(date.getHours())
     var _minutes = zero(date.getMinutes())
 
+    var weekday = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    _week = weekday[_week]
+
     // 根据时间差返回不同时间格式
-    if (monthC > 12) {
+    if (hourC > 1 * 24 * 30 * 12) {
         result = `${_year}-${_month}-${_day} ${_hours}:${_minutes}`
-    } else if (monthC >= 1) {
+    } else if (hourC > 6 * 24 + diff_hours) {
         result = `${_month}-${_day} ${_hours}:${_minutes}`
-    } else if (dayC >= 2) {
-        result = `${_month}-${_day} ${_hours}:${_minutes}`
-    } else if (dayC >= 1) {
+    } else if (hourC > 2 * 24 + diff_hours) {
+        result = `${_week} ${_hours}:${_minutes}`
+    } else if (hourC > 1 * 24 + diff_hours) {
+        result = `前天 ${_hours}:${_minutes}`
+    } else if (hourC > diff_hours) {
         result = `昨天 ${_hours}:${_minutes}`
-    } else if (hourC >= 1) {
-        result = `${_hours}:${_minutes}`
-    } else if (minC >= 1) {
-        result = `${_hours}:${_minutes}`
     } else {
-        result = '刚刚'
+        result = `${_hours}:${_minutes}`
     }
     return result
 }
