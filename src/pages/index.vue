@@ -1,10 +1,11 @@
 <template>
     <div id="index">
-        <div class="index-container">
+        <div class="index-container" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.5)">
             <!-- menu -->
             <div class="index-menu">
-                <div class="menu-user" @click="userDialogVisible = true">
-                    <img class="user-avatar" src="~@/assets/img/custormer_avatar.jpg">
+                <div class="menu-user" @click="userVisible = true">
+                    <img class="user-avatar" v-if="$store.state.userInfo.avatar" :src="$store.state.userInfo.avatar">
+                    <img class="user-avatar" v-else src="~@/assets/img/custormer_avatar.jpg">
                     <div class="user-status">在线</div>
                 </div>
                 <div class="menu-tabs">
@@ -18,8 +19,8 @@
                             <div class="item-label">更多</div>
                         </div>
                         <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item>欢迎语</el-dropdown-item>
-                            <el-dropdown-item>忙碌语</el-dropdown-item>
+                            <el-dropdown-item @click.native="settingWelcomeVisible = true">欢迎语</el-dropdown-item>
+                            <el-dropdown-item @click.native="settingBusyVisible = true">忙碌语</el-dropdown-item>
                             <el-dropdown-item @click.native="logOut">退出登录</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -32,17 +33,25 @@
                 </div>
             </div>
         </div>
-        <user-dialog v-if="userDialogVisible" @close="userDialogVisible = false" :userInfo="$store.state.userInfo"></user-dialog>
-        <drive-dialog v-if="driveDialogVisible" @close="handleDriveDialogClose"></drive-dialog>
+        <!-- 用户弹框 -->
+        <user-dialog v-if="userVisible" @close="userVisible = false" :userInfo="$store.state.userInfo"></user-dialog>
+        <!-- 试驾弹框 -->
+        <drive-dialog v-if="driveVisible" @close="handleDriveDialogClose"></drive-dialog>
+        <!-- 欢迎语弹框 -->
+        <setting-dialog v-if="settingWelcomeVisible" @close="settingWelcomeVisible = false" title="设置欢迎语" placeholder="请输入欢迎语" :content="$store.state.userInfo.welcome" @onSubmit="settingWelcome"></setting-dialog>
+        <!-- 忙碌语弹框 -->
+        <setting-dialog v-if="settingBusyVisible" @close="settingBusyVisible = false" title="设置忙碌语" placeholder="请输入忙碌语" :content="$store.state.userInfo.replay" @onSubmit="settingBusy"></setting-dialog>
     </div>
 </template>
 <script>
 import JIM from '@/api/jim'
-import { kfuLoginOut } from '@/api'
+import md5 from '@/utils/md5'
+import { compare } from '@/utils'
 import driveDialog from '@/components/driveDialog'
+import settingDialog from '@/components/settingDialog'
 export default {
     name: 'index',
-    components: { driveDialog },
+    components: { driveDialog, settingDialog },
     data() {
         return {
             tabOptions: [
@@ -57,73 +66,113 @@ export default {
             ],
             tabActive: 0,
             initChat: false,
-            userDialogVisible: false,
-            driveDialogVisible: false,
+            userVisible: false,
+            driveVisible: false,
+            settingWelcomeVisible: false,
+            settingBusyVisible: false,
+            loading: false,
             conversationList: []
         }
     },
     mounted() {
-        this.initChat = true
-        this.syncConversation()
+        this.handleRefreshLogin().then(() => {
+            this.initChat = true
+            this.syncConversation()
+        })
     },
     methods: {
+        // 处理刷新登录
+        handleRefreshLogin() {
+            this.loading = true
+            return new Promise((resolve, reject) => {
+                if (!JIM.isLogin()) {
+                    let form = {
+                        'username': this.$cache.getLocal(md5.usernameKey),
+                        'password': this.$cache.getLocal(md5.passwordKey),
+                        'is_md5': true
+                    }
+                    this.$store.dispatch('kfuLogin', form).then(() => {
+                        resolve()
+                    })
+                } else {
+                    resolve()
+                }
+            })
+        },
         // 获取漫游信息
         syncConversation() {
             JIM.getConversation().then(list => {
                 console.log('同步会话列表 syncConversationList', list)
                 this.conversationList = list.conversations
-                // this.conversationList.forEach(item => {
-                //     contents.forEach(content => {
-                //         // 同步已读消息
-                //         content.receipt_msgs.forEach(receipt_msg => {
-                //             content.msgs.some(msg => {
-                //                 if (receipt_msg.msg_id === msg.msg_id) {
-                //                     this.$set(msg, 'read', true)
-                //                     return true
-                //                 }
-                //             })
-                //         })
-                //         if (item.username === content.from_username) {
-                //             let msgs = content.msgs.map(msg => {
-                //                 // 获取图片资源路径
-                //                 if (msg.content.msg_body.media_id) {
-                //                     JIM.getResource(msg.content.msg_body.media_id).then(url => {
-                //                         this.$set(msg, 'local_url', url)
-                //                     })
-                //                 }
-                //                 return msg
-                //             })
-                //             // 合并短时间消息
-                //             for (let index = msgs.length - 1; index > 0; index--) {
-                //                 if (msgs[index].ctime_ms - msgs[index - 1].ctime_ms <= this.mergeTime_ms) {
-                //                     this.$set(msgs[index], 'ctime_ms_hide', true)
-                //                 }
-                //             }
-                //             this.$set(item, 'msgs', msgs)
-                //         }
-                //     })
-                // })
-                // // 排序
-                // this.conversationList.sort(compare('des', 'mtime'))
+                // 会话内容
+                let contents = this.$store.state.conversationContent
+                this.conversationList.forEach(item => {
+                    contents.forEach(content => {
+                        // 同步已读消息
+                        content.receipt_msgs.forEach(receipt_msg => {
+                            content.msgs.some(msg => {
+                                if (receipt_msg.msg_id === msg.msg_id) {
+                                    this.$set(msg, 'read', true)
+                                    return true
+                                }
+                            })
+                        })
+                        if (item.username === content.from_username) {
+                            let msgs = content.msgs.map(msg => {
+                                // 获取图片资源路径
+                                if (msg.content.msg_body.media_id) {
+                                    JIM.getResource(msg.content.msg_body.media_id).then(url => {
+                                        this.$set(msg, 'local_url', url)
+                                    })
+                                }
+                                return msg
+                            })
+                            // 合并短时间消息
+                            for (let index = msgs.length - 1; index > 0; index--) {
+                                if (msgs[index].ctime_ms - msgs[index - 1].ctime_ms <= this.mergeTime_ms) {
+                                    this.$set(msgs[index], 'ctime_ms_hide', true)
+                                }
+                            }
+                            this.$set(item, 'msgs', msgs)
+                        }
+                    })
+                })
+                // 排序
+                this.conversationList.sort(compare('des', 'mtime'))
+                this.loading = false
             })
         },
+        // tabs切换
         handleTabActive(item, index) {
             this.tabActive = index
             if (index === 1) {
-                this.driveDialogVisible = true
+                this.driveVisible = true
             }
         },
+        // 试驾弹框关闭
         handleDriveDialogClose() {
-            this.driveDialogVisible = false
+            this.driveVisible = false
             this.tabActive = 0
         },
-        logOut() {
-            kfuLoginOut(this.$store.state.userInfo.username).then(loginOut => {
-                console.log('客服退出登录', loginOut)
+        // 设置欢迎语
+        settingWelcome(text) {
+            console.log('欢迎语', text)
+            this.$store.dispatch('kfuSetting', { 'welcome': text }).then(() => {
+                this.settingWelcomeVisible = false
+                this.$message.success('设置成功')
             })
-            JIM.loginOut().then(() => {
-                console.log('JIM退出登录')
-                this.$cache.removeToken()
+        },
+        // 设置忙碌语
+        settingBusy(text) {
+            console.log('忙碌语', text)
+            this.$store.dispatch('kfuSetting', { 'replay': text }).then(() => {
+                this.settingBusyVisible = false
+                this.$message.success('设置成功')
+            })
+        },
+        // 退出登录
+        logOut() {
+            this.$store.dispatch('kfuLoginOut').then(() => {
                 this.$router.push({ name: 'login' })
             })
         }

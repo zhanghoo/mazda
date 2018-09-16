@@ -1,18 +1,14 @@
 import Vue from 'vue'
 import axios from 'axios'
 import jsonp from 'jsonp'
-import cache from '@/utils/cache'
 
 export const instance = axios.create({
-    baseURL: 'http://localhost:8010/',
+    // baseURL: '',
     timeout: 10 * 1000 // 超时时间
 })
 
 // 请求拦截
 instance.interceptors.request.use(config => {
-    if (cache.getToken()) {
-        config.headers['Authorization'] = `Bearer ${cache.getToken()}`
-    }
     return config
 }, error => {
     return Promise.reject(error)

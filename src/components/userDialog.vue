@@ -19,11 +19,12 @@
                 </div>
                 <div class="detail-item">
                     <div class="item-label">性 别：</div>
-                    <div class="item-value">保密</div>
+                    <div class="item-value" v-if="userInfo.gender">{{userInfo.gender === 1 ? '男' : '女'}}</div>
+                    <div class="item-value" v-else>保密</div>
                 </div>
                 <div class="detail-item">
                     <div class="item-label">地 区：</div>
-                    <div class="item-value">无</div>
+                    <div class="item-value">{{userInfo.address || '无'}}</div>
                 </div>
             </div>
         </div>

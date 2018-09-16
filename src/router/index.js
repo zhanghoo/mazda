@@ -11,10 +11,6 @@ Vue.use(Router)
 
 const routes = [
     {
-        path: '',
-        redirect: '/client'
-    },
-    {
         name: 'client',
         path: '/client',
         component: client

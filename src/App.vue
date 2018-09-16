@@ -34,7 +34,6 @@ export default {
     background: url('~@/assets/img/body_bg.jpg') left top no-repeat;
     background-size: cover;
     a {
-        color: $appColor;
         text-decoration: none;
         outline: none;
     }

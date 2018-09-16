@@ -65,7 +65,7 @@
                         <div class="wrap-tip">必选项</div>
                     </div>
                     <div class="box-tool">
-                        <el-button>关闭窗口</el-button>
+                        <el-button @click="$router.push({name: 'client'})">返回</el-button>
                         <el-button @click="reset">重置</el-button>
                         <el-button type="primary" @click="sendMessage">发送</el-button>
                     </div>
@@ -83,6 +83,7 @@ export default {
             provinceOptions: [],
             cityOptions: [],
             form: {
+                id: 0,
                 content: '',
                 province: '',
                 city: '',
@@ -93,6 +94,10 @@ export default {
         }
     },
     mounted() {
+        let id = this.$route.query.id
+        if (id) {
+            this.form.id = id
+        }
         this.getProvince()
     },
     methods: {
