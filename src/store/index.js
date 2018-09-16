@@ -97,6 +97,7 @@ const actions = {
             })
         })
     },
+    // 客服登录存储
     kfuLoginSave({ state }, { username, password }) {
         cache.setLocal(md5.usernameKey, username)
         cache.setLocal(md5.passwordKey, password)

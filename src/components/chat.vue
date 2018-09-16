@@ -386,6 +386,7 @@ export default {
                         if (status && !status.online) {
                             KfuId(activeUser.username).then(res => {
                                 let id = res.responseBody
+                                this.$message.warning('客服不在线，请您留言')
                                 this.$router.push({ path: '/message', query: { 'id': id } })
                             })
                         }

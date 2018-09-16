@@ -89,6 +89,7 @@ export default {
                         this.initJIM()
                         this.customList = res.data.filter(item => item.online)
                     } else {
+                        this.$message.warning('客服不在线，请您留言')
                         this.$router.push({ name: 'message' })
                     }
                 }
