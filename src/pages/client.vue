@@ -280,10 +280,10 @@ $chatTitleHeight = 50px;
                     }
                 }
                 .menu-tabs {
-                    .el-badge{
+                    .el-badge {
                         width: 100%;
                         height: 100%;
-                        .el-badge__content.is-fixed{
+                        .el-badge__content.is-fixed {
                             right: 25px;
                         }
                     }
@@ -308,6 +308,7 @@ $chatTitleHeight = 50px;
                 .menu-setting {
                     position: absolute;
                     bottom: 48px;
+                    left: 0;
                     width: 100%;
                     height: 46px;
                     cursor: pointer;
@@ -654,9 +655,9 @@ $chatTitleHeight = 50px;
                     justify-content: space-around;
                     width: 100%;
                     height: 100%;
-                    .el-badge{
+                    .el-badge {
                         height: 100%;
-                        .el-badge__content.is-fixed{
+                        .el-badge__content.is-fixed {
                             right: toRem(25);
                         }
                     }

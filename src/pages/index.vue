@@ -10,10 +10,10 @@
                 </div>
                 <div class="menu-tabs">
                     <el-badge v-for="(item, index) in tabOptions" :key="index" :value="item.count" :hidden="!item.count || item.count === 0">
-                    <div class="tabs-item" :class="{'active': tabActive === index}" @click="handleTabActive(item, index)">
-                        <div :class="[item.icon, 'item-icon']"></div>
-                        <div class="item-label">{{item.label}}</div>
-                    </div>
+                        <div class="tabs-item" :class="{'active': tabActive === index}" @click="handleTabActive(item, index)">
+                            <div :class="[item.icon, 'item-icon']"></div>
+                            <div class="item-label">{{item.label}}</div>
+                        </div>
                     </el-badge>
                     <el-dropdown trigger="click" class="tabs-dropdown">
                         <div class="tabs-item">
@@ -31,7 +31,7 @@
             <div class="index-right">
                 <div class="index-title">马自达在线顾问</div>
                 <div class="right-container">
-                    <my-chat v-if="initChat" chatType="kfu" :initData="$store.state.initData" :userInfo="$store.state.userInfo" :json="conversationList"  @unreadCount="(val) => tabOptions[0].count = val"></my-chat>
+                    <my-chat v-if="initChat" chatType="kfu" :initData="$store.state.initData" :userInfo="$store.state.userInfo" :json="conversationList" @unreadCount="(val) => tabOptions[0].count = val"></my-chat>
                 </div>
             </div>
         </div>
@@ -226,10 +226,10 @@ $chatTitleHeight = 50px;
                     }
                 }
                 .menu-tabs {
-                    .el-badge{
+                    .el-badge {
                         width: 100%;
                         height: 100%;
-                        .el-badge__content.is-fixed{
+                        .el-badge__content.is-fixed {
                             right: 25px;
                         }
                     }
@@ -237,6 +237,7 @@ $chatTitleHeight = 50px;
                         width: 100%;
                         position: absolute;
                         bottom: 40px;
+                        left: 0;
                     }
                     .tabs-item {
                         flex-center();
@@ -253,20 +254,6 @@ $chatTitleHeight = 50px;
                         }
                         .item-label {
                             display: none;
-                        }
-                    }
-                }
-                .menu-setting {
-                    flex-center();
-                    position: absolute;
-                    bottom: 48px;
-                    width: 100%;
-                    .my-icon-menu {
-                        color: #fff;
-                        font-size: 24px;
-                        cursor: pointer;
-                        &:hover {
-                            color: #999;
                         }
                     }
                 }
@@ -482,7 +469,7 @@ $chatTitleHeight = 50px;
                 width: 100%;
                 height: toRem(55);
                 background: #0D0D0E;
-                .menu-user, .menu-setting {
+                .menu-user {
                     display: none;
                 }
                 .menu-tabs {
@@ -491,9 +478,9 @@ $chatTitleHeight = 50px;
                     justify-content: space-around;
                     width: 100%;
                     height: 100%;
-                    .el-badge{
+                    .el-badge {
                         height: 100%;
-                        .el-badge__content.is-fixed{
+                        .el-badge__content.is-fixed {
                             right: toRem(25);
                         }
                     }
