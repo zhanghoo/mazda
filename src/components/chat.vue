@@ -108,7 +108,7 @@
                         <a v-if="isKfu" class="tool-item my-icon-car" title="预约试驾" @click="handleSendSingleMsg(driveText)"></a>
                     </div>
                     <el-input class="publish-content" v-model="content" placeholder="请输入文字" type="textarea" resize="none" :rows="2"></el-input>
-                    <el-button class="publish-button" @click="handleSendSingleMsg('')">发送</el-button>
+                    <el-button class="publish-button" :loading="sendLoading" @click="handleSendSingleMsg('')">发送</el-button>
                     <div class="publish-icon my-icon-share" @click="handleSendSingleMsg('')"></div>
                 </div>
             </div>
@@ -158,7 +158,8 @@ export default {
             wecomeBefore: '感谢您关注官方体验平台，平台为您提供操作简洁的在线赏车订车服务，并可通过金牌导购答疑解惑，使您在家中就能轻松选择预订爱车。',
             tipDialogType: 0,
             tipDialogVisible: false,
-            driveText: '[[[预约试驾]]]'
+            driveText: '[[[预约试驾]]]',
+            sendLoading: false
         }
     },
     computed: {
@@ -290,38 +291,42 @@ export default {
         },
         // 发送文字消息
         handleSendSingleMsg(content = '') {
-            let text = ''
-            if (content) {
-                text = content
-            } else {
-                text = this.content
-            }
-            if (text) {
-                JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
-                    console.log('发送文字消息：sendSingleMsg', data)
-                    if (this.conversationActiveData.retractText) {
-                        this.$set(this.conversationActiveData, 'retractText', '')
-                        this.$set(this.conversationActiveData, 'retractTime', '')
-                    }
-                    let msg = data.msg
-                    this.$set(msg, 'ctime_ms', data.res.ctime_ms)
-                    this.mergeMessage(this.conversationActiveData, msg)
-                    this.scrollBottom()
-                    if (!content) {
-                        this.content = ''
-                    }
-                    // 保存信息
-                    let params = {
-                        'kfusername': this.conversationActiveData.username,
-                        'username': this.userInfo.username,
-                        'message': text,
-                        'msg_type': 1,
-                        'user_type': 1,
-                        'timestamp': (new Date()).getTime()
-                    }
-                    saveMsg(params).then(res => {
+            if (!this.sendLoading) {
+                this.sendLoading = true
+                let text = ''
+                if (content) {
+                    text = content
+                } else {
+                    text = this.content
+                }
+                if (text) {
+                    JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
+                        console.log('发送文字消息：sendSingleMsg', data)
+                        if (this.conversationActiveData.retractText) {
+                            this.$set(this.conversationActiveData, 'retractText', '')
+                            this.$set(this.conversationActiveData, 'retractTime', '')
+                        }
+                        let msg = data.msg
+                        this.$set(msg, 'ctime_ms', data.res.ctime_ms)
+                        this.mergeMessage(this.conversationActiveData, msg)
+                        this.scrollBottom()
+                        if (!content) {
+                            this.content = ''
+                        }
+                        // 保存信息
+                        let params = {
+                            'kfusername': this.conversationActiveData.username,
+                            'username': this.userInfo.username,
+                            'message': text,
+                            'msg_type': 1,
+                            'user_type': 1,
+                            'timestamp': (new Date()).getTime()
+                        }
+                        saveMsg(params).then(res => {
+                        })
+                        this.sendLoading = false
                     })
-                })
+                }
             }
         },
         // 发送图片消息
@@ -374,12 +379,12 @@ export default {
                         if (msg.ctime_ms - msgs[index].ctime_ms < this.mergeTime_ms) {
                             this.$set(msg, 'ctime_ms_hide', true)
                         }
-                        msgs.push(msg)
-                        this.$set(conversation, 'msgs', msgs)
-                        resolve()
                         break
                     }
                 }
+                msgs.push(msg)
+                this.$set(conversation, 'msgs', msgs)
+                resolve()
             })
         },
         // 设置已读（针对自己）
