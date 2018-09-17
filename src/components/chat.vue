@@ -221,7 +221,7 @@ export default {
                             this.$set(conversation, 'retractText', '')
                             this.$set(conversation, 'retractTime', '')
                         }
-                        this.mergeMessage(conversation.msgs, msg)
+                        this.mergeMessage(conversation, msg)
                         // 当前对话框 ？已读回执 ： 未读 +1
                         if (this.conversationActiveData && conversation.username === this.conversationActiveData.username) {
                             this.handleMsgReport(conversation.username, [res.rid])
