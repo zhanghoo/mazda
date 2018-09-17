@@ -300,12 +300,12 @@ export default {
                 JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
                     console.log('发送文字消息：sendSingleMsg', data)
                     if (this.conversationActiveData.retractText) {
-                        this.$set(conversation, 'retractText', '')
-                        this.$set(conversation, 'retractTime', '')
+                        this.$set(this.conversationActiveData, 'retractText', '')
+                        this.$set(this.conversationActiveData, 'retractTime', '')
                     }
                     let msg = data.msg
                     this.$set(msg, 'ctime_ms', data.res.ctime_ms)
-                    this.mergeMessage(this.conversationActiveData.msgs, msg)
+                    this.mergeMessage(this.conversationActiveData, msg)
                     this.scrollBottom()
                     if (!content) {
                         this.content = ''
@@ -337,7 +337,7 @@ export default {
                         this.$set(conversation, 'retractTime', '')
                     }
                     this.$set(msg, 'ctime_ms', data.res.ctime_ms)
-                    this.mergeMessage(this.conversationActiveData.msgs, msg).then(() => {
+                    this.mergeMessage(this.conversationActiveData, msg).then(() => {
                         this.scrollBottom()
                     })
                     // 保存信息
@@ -366,14 +366,16 @@ export default {
             this.handleUnread_count()
         },
         // 合并短间隔消息
-        mergeMessage(msgs, msg) {
+        mergeMessage(conversation, msg) {
             return new Promise((resolve, reject) => {
+                let msgs = conversation.msgs
                 for (let index = msgs.length - 1; index > 0; index--) {
                     if (!msgs[index].ctime_ms_hide) {
                         if (msg.ctime_ms - msgs[index].ctime_ms < this.mergeTime_ms) {
                             this.$set(msg, 'ctime_ms_hide', true)
                         }
                         msgs.push(msg)
+                        this.$set(Ï, 'msgs', msgs)
                         resolve()
                         break
                     }
