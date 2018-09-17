@@ -375,7 +375,7 @@ export default {
                             this.$set(msg, 'ctime_ms_hide', true)
                         }
                         msgs.push(msg)
-                        this.$set(Ï, 'msgs', msgs)
+                        this.$set(conversation, 'msgs', msgs)
                         resolve()
                         break
                     }
