@@ -168,14 +168,14 @@ export default {
 #message {
     position: relative;
     width: 100%;
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     .message-container {
         display: flex;
         flex-direction: column;
-        width: toRem(1000);
+        width: 1000px;
         margin: 0 auto;
         max-height: 800px;
         min-height: 550px;
@@ -196,7 +196,7 @@ export default {
             width: 100%;
             overflow: hidden;
             .main-menu {
-                width: toRem(140);
+                width: 140px;
                 color: #fff;
                 font-size: 14px;
                 background: #000;
@@ -336,8 +336,8 @@ export default {
 @media screen and (max-width: 980px) {
     #message {
         width: 100%;
-        height: 100vh;
-        overflow: hidden;
+        min-height: 100vh;
+        overflow-y: auto;
         .message-container {
             width: 100%;
             height: 100%;
@@ -345,8 +345,8 @@ export default {
                 display: flex;
                 align-items: center;
                 justify-content: flex-end;
-                font-size: 14px;
-                height: 45px;
+                font-size: toRem(14);
+                height: toRem(40);
             }
             .message-main {
                 .main-menu {
@@ -356,12 +356,13 @@ export default {
                     display: flex;
                     flex-direction: column;
                     .box-header {
-                        height: 38px;
+                        height: fit-content;
+                        padding: toRem(8) 0;
                         color: #666;
-                        font-size: 13px;
+                        font-size: toRem(13);
                         i {
                             color: inherit;
-                            font-size: 20px;
+                            font-size: toRem(20);
                         }
                     }
                     .box-wrap {
@@ -369,7 +370,7 @@ export default {
                             position: relative;
                             flex: 1;
                             .wrap-form {
-                                padding: 10px 20px;
+                                padding: toRem(10) toRem(20);
                                 .wrap-form-list {
                                     display: flex;
                                     align-items: flex-start;
@@ -378,18 +379,18 @@ export default {
                                     margin-bottom: 0;
                                     .wrap-form-item {
                                         width: 100%;
-                                        padding: 5px 0;
+                                        padding: toRem(5) 0;
                                         margin: 0;
                                         .item-label {
-                                            font-size: 14px;
+                                            font-size: toRem(14);
                                             text-align: left;
                                         }
                                         .el-input .el-input__inner {
                                             color: #333;
-                                            height: 36px;
-                                            line-height: 36px;
+                                            height: toRem(36);
+                                            line-height: toRem(36);
                                             background: #fff;
-                                            border-radius: 6px;
+                                            border-radius: toRem(6);
                                             &::placeholder {
                                                 color: #333;
                                             }
@@ -399,32 +400,28 @@ export default {
                             }
                         }
                         .wrap-title {
-                            height: 40px;
-                            font-size: 12px;
+                            height: toRem(32);
+                            font-size: toRem(12);
                             i {
-                                font-size: 18px;
+                                font-size: toRem(18);
                             }
                         }
                         .el-textarea {
-                            height: 150px;
+                            height: toRem(125);
                             .el-textarea__inner {
                                 height: 100%;
                                 line-height: 1.8;
-                                padding: 10px 25px;
+                                padding: toRem(10) toRem(25);
                             }
                         }
                         .wrap-tip {
-                            position: absolute;
-                            bottom: 0;
-                            left: 0;
-                            right: 0;
                             width: 100%;
-                            padding: 0 20px 10px;
+                            padding: 0 toRem(20) toRem(6);
                             margin: 0;
                         }
                     }
                     .box-tool {
-                        height: 60px;
+                        min-height: toRem(50);
                     }
                 }
             }

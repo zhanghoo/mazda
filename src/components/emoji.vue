@@ -170,21 +170,21 @@ export default {
 @media screen and (max-width: 980px) {
     #emoji {
         width: 100%;
-        height: 210px;
-        padding: 0 12px;
+        height: toRem(210);
+        padding: 0 toRem(12);
         overflow-y: auto;
         .emoji-list {
             width: 100%;
             .emoji-item {
                 width: 10%;
-                min-height: 30px;
+                min-height: toRem(30);
             }
         }
     }
     .emoji-web {
         width: 100% !important;
         left: 0 !important;
-        padding: 12px 0 !important;
+        padding: toRem(12) 0 !important;
     }
 }
 </style>

@@ -47,7 +47,7 @@ var JimInit = {
             })
         })
     },
-    isLogin: function() {
+    isLogin: function () {
         return JIM.isLogin()
     }
 }
@@ -179,6 +179,8 @@ var JimUtils = {
     },
     // 获取用户信息
     getUserInfo: function (username, appkey) {
+        console.log(username)
+        console.log(appkey)
         return new Promise((resolve, reject) => {
             JIM.getUserInfo({
                 'username': username,

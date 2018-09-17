@@ -9,10 +9,12 @@
                     <div class="user-status">在线</div>
                 </div>
                 <div class="menu-tabs">
-                    <div class="tabs-item" v-for="(item, index) in tabOptions" :key="index" :class="{'active': tabActive === index}" @click="tabActive = index">
-                        <div :class="[item.icon, 'item-icon']"></div>
-                        <div class="item-label">{{item.label}}</div>
-                    </div>
+                    <el-badge v-for="(item, index) in tabOptions" :key="index" :value="item.count" :hidden="!item.count || item.count === 0">
+                        <div class="tabs-item" :class="{'active': tabActive === index}" @click="tabActive = index">
+                            <div :class="[item.icon, 'item-icon']"></div>
+                            <div class="item-label">{{item.label}}</div>
+                        </div>
+                    </el-badge>
                 </div>
                 <div class="menu-setting" v-if="!isLogin">
                     <div class="setting-icon my-icon-userSetting" @click="loginDialogVisible = true"></div>
@@ -29,7 +31,7 @@
                 </div>
                 <!-- 历史对话框 -->
                 <div class="right-container conversation" v-show="tabActive === 1">
-                    <my-chat :activeUser="activeUser" :initData="initData" :userInfo="userInfo" :json="conversationList"></my-chat>
+                    <my-chat :activeUser="activeUser" :initData="initData" :userInfo="userInfo" :json="conversationList" @unreadCount="(val) => tabOptions[1].count = val"></my-chat>
                 </div>
             </div>
         </div>
@@ -54,7 +56,8 @@ export default {
                 },
                 {
                     icon: 'my-icon-conversation',
-                    label: '历史会话'
+                    label: '历史会话',
+                    count: 0
                 }
             ],
             tabActive: 0,
@@ -119,11 +122,16 @@ export default {
                                 // 880103   user not exist  用户不存在
                                 // 用户不存在, 前往注册
                                 if (err.code === 880103) {
-                                    JimApi.register(form).then(() => {
+                                    let registerForm = {
+                                        'username': user.data.username,
+                                        'password': user.data.password
+                                    }
+                                    JIM.register(registerForm).then(() => {
                                         this.initJIM()
                                     })
-                                } else if (err.code === 88107) {
-                                    JimApi.loginOut()
+                                } else if (err.code === 880107) {
+                                    JIM.loginOut()
+                                    this.initJIM()
                                 } else {
                                     this.$message.error('登录失败')
                                 }
@@ -229,8 +237,8 @@ export default {
 }
 </script>
 <style lang='stylus'>
-$chatHeight = toRem(710);
-$chatTitleHeight = toRem(50);
+$chatHeight = 710px;
+$chatTitleHeight = 50px;
 @media screen and (min-width: 981px) {
     #client {
         position: relative;
@@ -250,7 +258,7 @@ $chatTitleHeight = toRem(50);
             overflow: hidden;
             .index-menu {
                 position: relative;
-                width: toRem(88);
+                width: 88px;
                 height: 100%;
                 background: #0D0D0E;
                 padding-top: $chatTitleHeight;
@@ -272,6 +280,13 @@ $chatTitleHeight = toRem(50);
                     }
                 }
                 .menu-tabs {
+                    .el-badge{
+                        width: 100%;
+                        height: 100%;
+                        .el-badge__content.is-fixed{
+                            right: 25px;
+                        }
+                    }
                     .tabs-item {
                         flex-center();
                         color: #fff;
@@ -340,25 +355,25 @@ $chatTitleHeight = toRem(50);
                             display: flex;
                             align-items: center;
                             width: 100%;
-                            height: toRem(50);
+                            height: 50px;
                             color: #2c2c2c;
                             font-size: 16px;
-                            padding-left: toRem(18);
+                            padding-left: 18px;
                             cursor: pointer;
                             &:hover {
                                 background-color: #F3F7FB;
                             }
                             .item-avatar {
-                                width: toRem(30);
-                                height: toRem(30);
-                                margin-right: toRem(10);
+                                width: 30px;
+                                height: 30px;
+                                margin-right: 10px;
                             }
                         }
                     }
                     &.conversation {
                         .index-user {
                             position: relative;
-                            width: toRem(310);
+                            width: 310px;
                             height: 100%;
                             border-right: 1px solid $borderColor;
                             background: $bgColor;
@@ -440,21 +455,21 @@ $chatTitleHeight = toRem(50);
                                     display: flex;
                                     flex-direction: column;
                                     width: 100%;
-                                    height: toRem(460);
+                                    height: 460px;
                                     overflow: hidden;
                                     .conversation-title {
                                         text-ellipsis();
                                         display: flex;
                                         align-items: center;
                                         width: 100%;
-                                        height: toRem(40);
+                                        height: 40px;
                                         font-size: 16px;
-                                        padding: 0 toRem(20);
+                                        padding: 0 20px;
                                     }
                                     .conversation-content {
                                         width: 100%;
-                                        height: toRem(420);
-                                        padding: 0 toRem(20);
+                                        height: 420px;
+                                        padding: 0 20px;
                                         overflow-y: auto;
                                         overflow-X: hidden;
                                         border-bottom: 1px solid #D9DEE4;
@@ -463,12 +478,12 @@ $chatTitleHeight = toRem(50);
                                             .content-item-wrap {
                                                 &:first-child {
                                                     .item-time {
-                                                        margin-top: toRem(20);
+                                                        margin-top: 20px;
                                                     }
                                                 }
                                                 .item-time {
                                                     flex-center();
-                                                    margin-top: toRem(30);
+                                                    margin-top: 30px;
                                                     .time-value {
                                                         font-size: 12px;
                                                         color: #999;
@@ -481,7 +496,7 @@ $chatTitleHeight = toRem(50);
                                                 }
                                                 .item-text {
                                                     display: flex;
-                                                    padding: toRem(20) 0;
+                                                    padding: 20px 0;
                                                     &:hover {
                                                         .item-more {
                                                             .el-icon-more {
@@ -492,22 +507,22 @@ $chatTitleHeight = toRem(50);
                                                     &.self {
                                                         justify-content: flex-end;
                                                         .item-avatar {
-                                                            margin-left: toRem(12);
+                                                            margin-left: 12px;
                                                             margin-right: 0;
                                                         }
                                                         .item-content-value {
                                                             border-radius: 12px 12px 2px 12px;
                                                         }
                                                         .item-more {
-                                                            margin-right: toRem(12);
+                                                            margin-right: 12px;
                                                             margin-left: 0;
                                                         }
                                                     }
                                                     .item-avatar {
                                                         display: block;
-                                                        width: toRem(40);
-                                                        height: toRem(40);
-                                                        margin-right: toRem(12);
+                                                        width: 40px;
+                                                        height: 40px;
+                                                        margin-right: 12px;
                                                     }
                                                     .item-content {
                                                         .item-content-value {
@@ -525,13 +540,13 @@ $chatTitleHeight = toRem(50);
                                                         cursor: zoom-in;
                                                         img {
                                                             display: block;
-                                                            max-width: toRem(200);
-                                                            max-height: toRem(300);
+                                                            max-width: 200px;
+                                                            max-height: 300px;
                                                             border-radius: 5px;
                                                         }
                                                     }
                                                     .item-more {
-                                                        margin-left: toRem(12);
+                                                        margin-left: 12px;
                                                         align-self: flex-end;
                                                         .el-icon-more {
                                                             cursor: pointer;
@@ -561,7 +576,7 @@ $chatTitleHeight = toRem(50);
                                     }
                                 }
                                 .conversation-publish {
-                                    height: toRem(200);
+                                    height: 200px;
                                     overflow: hidden;
                                     .publish-tool {
                                         display: flex;
@@ -589,10 +604,10 @@ $chatTitleHeight = toRem(50);
                                     .publish-button {
                                         flex-center();
                                         position: absolute;
-                                        bottom: toRem(20);
-                                        right: toRem(20);
-                                        width: toRem(90);
-                                        height: toRem(30);
+                                        bottom: 20px;
+                                        right: 20px;
+                                        width: 90px;
+                                        height: 30px;
                                         font-size: 14px;
                                         color: #2C2C2C;
                                         cursor: pointer;
@@ -628,7 +643,7 @@ $chatTitleHeight = toRem(50);
                 right: 0;
                 z-index: 99;
                 width: 100%;
-                height: 55px;
+                height: toRem(55);
                 background: #0D0D0E;
                 .menu-user, .menu-setting {
                     display: none;
@@ -639,31 +654,37 @@ $chatTitleHeight = toRem(50);
                     justify-content: space-around;
                     width: 100%;
                     height: 100%;
+                    .el-badge{
+                        height: 100%;
+                        .el-badge__content.is-fixed{
+                            right: toRem(25);
+                        }
+                    }
                     .tabs-item {
                         display: flex;
                         flex-direction: column;
                         justify-content: center;
                         text-align: center;
                         height: 100%;
-                        padding: 0 18px;
+                        padding: 0 toRem(18);
                         color: #fff;
-                        font-size: 24px;
+                        font-size: toRem(24);
                         &.active {
                             background: $appColor;
                         }
                         .item-label {
                             white-space: nowrap;
-                            font-size: 12px;
-                            margin-top: 2px;
+                            font-size: toRem(12);
+                            margin-top: toRem(2);
                         }
                     }
                 }
             }
             .index-right {
                 height: 100vh;
-                padding-top: 62px;
+                padding-top: toRem(62);
                 background: #000 url('~@/assets/img/mazidalogo.png') no-repeat top left;
-                background-size: 56px auto;
+                background-size: toRem(56) auto;
                 overflow: hidden;
                 .index-title {
                     display: none;
@@ -672,23 +693,23 @@ $chatTitleHeight = toRem(50);
                     width: 100%;
                     height: 100%;
                     background: #fff;
-                    border-top-left-radius: 8px;
-                    border-top-right-radius: 8px;
+                    border-top-left-radius: toRem(8);
+                    border-top-right-radius: toRem(8);
                     overflow: hidden;
                     &.linkman {
-                        padding: 0 18px;
+                        padding: 0 toRem(18);
                         .linkman-item {
                             display: flex;
                             align-items: center;
                             width: 100%;
-                            height: 50px;
+                            height: toRem(50);
                             color: #2c2c2c;
-                            font-size: 16px;
-                            border-bottom: 1px solid #eee;
+                            font-size: toRem(16);
+                            border-bottom: toRem(1) solid #eee;
                             .item-avatar {
-                                width: 30px;
-                                height: 30px;
-                                margin-right: 10px;
+                                width: toRem(30);
+                                height: toRem(30);
+                                margin-right: toRem(10);
                             }
                         }
                     }

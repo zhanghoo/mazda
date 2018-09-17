@@ -55,35 +55,35 @@ export default {
         padding: 0;
     }
     .my-dialog-container {
-        padding: toRem(20) toRem(30) toRem(12);
+        padding: 20px 30px 12px;
         .dialog-main {
             text-align: center;
-            padding-bottom: toRem(20);
-            margin-bottom: toRem(14);
+            padding-bottom: 20px;
+            margin-bottom: 14px;
             border-bottom: 1px solid #e3e6eb;
             .main-avatar {
                 display: block;
-                width: toRem(65);
-                height: toRem(65);
+                width: 65px;
+                height: 65px;
                 margin: 0 auto;
             }
             .main-nickname {
                 color: #0B1816;
                 font-size: 18px;
                 text-align: center;
-                margin: toRem(12) 0 toRem(6);
+                margin: 12px 0 6px;
             }
         }
         .dialog-detail {
             .detail-item {
                 display: flex;
                 font-size: 14px;
-                margin-bottom: toRem(12);
+                margin-bottom: 12px;
                 .item-label {
-                    max-width: toRem(56);
+                    max-width: 56px;
                     color: #808080;
                     white-space: nowrap;
-                    margin-right: toRem(12);
+                    margin-right: 12px;
                 }
                 .item-value {
                     flex: 1;

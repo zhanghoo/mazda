@@ -13,37 +13,41 @@
             </div>
             <div class="drive-content">
                 <el-table :data="tableJson" style="width: 100%" fit :header-cell-style="{'text-align': 'center'}" header-cell-class-name="header-label" empty-text="没有更多数据了">
-                    <el-table-column align="center" label="姓名">
+                    <el-table-column align="center" label="姓名" min-width="80">
                         <template slot-scope="scope">
                             <span>{{scope.row.name}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="性别">
+                    <el-table-column align="center" label="性别" min-width="50">
                         <template slot-scope="scope">
-                            <span>{{scope.row.ctime}}</span>
+                            <span>{{scope.row.sex}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="手机号">
+                    <el-table-column align="center" label="手机号" min-width="100">
                         <template slot-scope="scope">
-                            <span>{{scope.row.ctime}}</span>
+                            <span>{{scope.row.mobile}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="车系">
+                    <el-table-column align="center" label="车系" min-width="50">
                         <template slot-scope="scope">
-                            <span>{{scope.row.ctime}}</span>
+                            <span>{{scope.row.product}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="车型">
+                    <el-table-column align="center" label="车型" min-width="110">
                         <template slot-scope="scope">
-                            <span>{{scope.row.ctime}}</span>
+                            <span>{{scope.row.model}}</span>
                         </template>
                     </el-table-column>
-                    <el-table-column align="center" label="提交时间">
+                    <el-table-column align="center" label="提交时间" min-width="110">
                         <template slot-scope="scope">
-                            <span>{{scope.row.ctime}}</span>
+                            <span>{{scope.row.addtime}}</span>
                         </template>
                     </el-table-column>
                 </el-table>
+            </div>
+            <div class="drive-pagination">
+                <el-pagination @current-change="handleCurrentChange" :current-page="listQuery.p" :page-size="listQuery.num" layout="total, prev, pager, next, jumper" :total="total">
+                </el-pagination>
             </div>
         </div>
     </el-dialog>
@@ -55,7 +59,13 @@ export default {
     data() {
         return {
             visible: true,
-            tableJson: []
+            tableJson: [],
+            listQuery: {
+                advisors_id: 16,
+                p: 1,
+                num: 10
+            },
+            total: 0
         }
     },
     watch: {
@@ -66,16 +76,23 @@ export default {
         }
     },
     mounted() {
-        let params = {
-            advisors_id: 14,
-            p: 1,
-            num: 20
+        this.getTableList()
+    },
+    methods: {
+        getTableList() {
+            getDrive(this.listQuery).then(res => {
+                console.log('试驾清单', res)
+                if (res.data && res.data.length > 0) {
+                    this.tableJson = res.data
+                }
+                this.total = res.count
+            }).catch(err => {
+                console.log(err)
+            })
+        },
+        handleCurrentChange(val) {
+            this.listQuery.p = val
         }
-        getDrive(params).then(res => {
-            console.log('试驾清单', res)
-        }).catch(err => {
-            console.log(err)
-        })
     }
 }
 </script>
@@ -146,7 +163,7 @@ export default {
             }
             .drive-content {
                 padding: 20px 25px;
-                min-height: 500px;
+                min-height: 400px;
                 max-height: 600px;
                 overflow-y: auto;
                 .header-label {
@@ -161,6 +178,10 @@ export default {
                 .el-table__empty-text {
                     color: #000;
                 }
+            }
+            .drive-pagination {
+                flex-center();
+                padding: 20px;
             }
         }
     }
@@ -179,26 +200,12 @@ export default {
                     flex-direction: column;
                     height: 100%;
                     .drive-header {
-                        padding: 0 16px;
+                        padding: 0 toRem(16);
                     }
                     .drive-content {
-                        padding: 20px 15px;
+                        padding: toRem(20) toRem(15);
                         flex: 1;
                         overflow-y: auto;
-                        .el-table {
-                            width: 100%;
-                            .el-table__header, .el-table__body, .el-table__empty-block {
-                                width: auto !important;
-                            }
-                            .header-label {
-                                font-size: 12px;
-                                width: fit-content;
-                                .cell {
-                                    width: fit-content;
-                                    padding: 0 5px;
-                                }
-                            }
-                        }
                     }
                 }
             }

@@ -107,8 +107,8 @@
                         </label>
                         <a v-if="isKfu" class="tool-item my-icon-car" title="预约试驾" @click="handleSendSingleMsg(driveText)"></a>
                     </div>
-                    <el-input class="publish-content" v-model="content" placeholder="请输入文字" type="textarea" resize="none" @keyup.enter.native="handleSendSingleMsg('')" :rows="3"></el-input>
-                    <div class="publish-button" @click="handleSendSingleMsg('')">发送</div>
+                    <el-input class="publish-content" v-model="content" placeholder="请输入文字" type="textarea" resize="none" :rows="2"></el-input>
+                    <el-button class="publish-button" @click="handleSendSingleMsg('')">发送</el-button>
                     <div class="publish-icon my-icon-share" @click="handleSendSingleMsg('')"></div>
                 </div>
             </div>
@@ -170,6 +170,7 @@ export default {
                 return ''
             }
         },
+        // 是否客服chat
         isKfu() {
             if (this.chatType) {
                 return this.chatType === 'kfu'
@@ -230,10 +231,23 @@ export default {
                         }
                     } else {
                         // 新建对话框
-                        // let new_conversation = {
-                        // }
+                        let nowTime = new Date().getTime()
+                        JIM.getUserInfo(msg.from_username, this.initData.appkey).then(res => {
+                            console.log('获取用户信息', res)
+                            let userInfo = res.user_info
+                            let newConversation = {
+                                ...userInfo,
+                                'nickName': userInfo.nickname || userInfo.username,
+                                'mtime': nowTime,
+                                msgs: [
+                                    msg
+                                ]
+                            }
+                            this.conversationList.unshift(newConversation)
+                        })
                     }
                 }
+                this.handleUnread_count()
             })
         },
         // 监听已读数变更（针对自己）
@@ -282,32 +296,33 @@ export default {
             } else {
                 text = this.content
             }
-            console.log('text', text)
-            JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
-                console.log('发送文字消息：sendSingleMsg', data)
-                if (this.conversationActiveData.retractText) {
-                    this.$set(conversation, 'retractText', '')
-                    this.$set(conversation, 'retractTime', '')
-                }
-                let msg = data.msg
-                this.$set(msg, 'ctime_ms', data.res.ctime_ms)
-                this.mergeMessage(this.conversationActiveData.msgs, msg)
-                this.scrollBottom()
-                // 保存信息
-                let params = {
-                    'kfusername': this.conversationActiveData.username,
-                    'username': this.userInfo.username,
-                    'message': text,
-                    'msg_type': 1,
-                    'user_type': 1,
-                    'timestamp': (new Date()).getTime()
-                }
-                saveMsg(params).then(res => {
+            if (text) {
+                JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
+                    console.log('发送文字消息：sendSingleMsg', data)
+                    if (this.conversationActiveData.retractText) {
+                        this.$set(conversation, 'retractText', '')
+                        this.$set(conversation, 'retractTime', '')
+                    }
+                    let msg = data.msg
+                    this.$set(msg, 'ctime_ms', data.res.ctime_ms)
+                    this.mergeMessage(this.conversationActiveData.msgs, msg)
+                    this.scrollBottom()
                     if (!content) {
                         this.content = ''
                     }
+                    // 保存信息
+                    let params = {
+                        'kfusername': this.conversationActiveData.username,
+                        'username': this.userInfo.username,
+                        'message': text,
+                        'msg_type': 1,
+                        'user_type': 1,
+                        'timestamp': (new Date()).getTime()
+                    }
+                    saveMsg(params).then(res => {
+                    })
                 })
-            })
+            }
         },
         // 发送图片消息
         handleSendSinglePic(ev) {
@@ -322,8 +337,9 @@ export default {
                         this.$set(conversation, 'retractTime', '')
                     }
                     this.$set(msg, 'ctime_ms', data.res.ctime_ms)
-                    this.mergeMessage(this.conversationActiveData.msgs, msg)
-                    this.scrollBottom()
+                    this.mergeMessage(this.conversationActiveData.msgs, msg).then(() => {
+                        this.scrollBottom()
+                    })
                     // 保存信息
                     let params = {
                         'kfusername': this.conversationActiveData.username,
@@ -334,7 +350,6 @@ export default {
                         'timestamp': (new Date()).getTime()
                     }
                     saveMsg(params).then(res => {
-                        this.content = ''
                     })
                 })
             })
@@ -348,18 +363,22 @@ export default {
                 // 重置未读数
                 JIM.resetUnreadCount(username)
             })
+            this.handleUnread_count()
         },
         // 合并短间隔消息
         mergeMessage(msgs, msg) {
-            for (let index = msgs.length - 1; index > 0; index--) {
-                if (!msgs[index].ctime_ms_hide) {
-                    if (msg.ctime_ms - msgs[index].ctime_ms < this.mergeTime_ms) {
-                        this.$set(msg, 'ctime_ms_hide', true)
+            return new Promise((resolve, reject) => {
+                for (let index = msgs.length - 1; index > 0; index--) {
+                    if (!msgs[index].ctime_ms_hide) {
+                        if (msg.ctime_ms - msgs[index].ctime_ms < this.mergeTime_ms) {
+                            this.$set(msg, 'ctime_ms_hide', true)
+                        }
+                        msgs.push(msg)
+                        resolve()
+                        break
                     }
-                    msgs.push(msg)
-                    break
                 }
-            }
+            })
         },
         // 设置已读（针对自己）
         comparisonMessage(readMsgs) {
@@ -515,11 +534,22 @@ export default {
         reLogin() {
             JIM.loginOut()
             window.location.reload()
+        },
+        // 所有会话未读数
+        handleUnread_count() {
+            let count = 0
+            if (this.conversationList) {
+                this.conversationList.forEach(item => {
+                    if (item.unread_msg_count) count += item.unread_msg_count
+                })
+                this.$emit('unreadCount', count)
+            }
         }
     }
 }
 </script>
 <style lang='stylus'>
+$publishHeight = toRem(100);
 @media screen and (min-width: 981px) {
     .chat {
         display: flex;
@@ -527,7 +557,7 @@ export default {
         height: 100%;
         .chat-user {
             position: relative;
-            width: toRem(310);
+            width: 310px;
             height: 100%;
             border-right: 1px solid $borderColor;
             background: $bgColor;
@@ -615,35 +645,34 @@ export default {
                     display: flex;
                     flex-direction: column;
                     width: 100%;
-                    height: toRem(460);
+                    height: 500px;
                     overflow: hidden;
                     .conversation-title {
                         text-ellipsis();
                         display: flex;
                         align-items: center;
                         width: 100%;
-                        height: toRem(40);
+                        height: 40px;
                         font-size: 16px;
-                        padding: 0 toRem(20);
+                        padding: 0 20px;
                     }
                     .conversation-content {
                         width: 100%;
-                        height: toRem(420);
-                        padding: 0 toRem(20);
+                        flex: 1;
+                        padding: 0 20px;
                         overflow-y: auto;
                         overflow-X: hidden;
-                        border-bottom: 1px solid #D9DEE4;
                         .content-list {
                             width: 100%;
                             .content-item-wrap {
                                 &:first-child {
                                     .item-time {
-                                        margin-top: toRem(20);
+                                        margin-top: 20px;
                                     }
                                 }
                                 .item-time {
                                     flex-center();
-                                    margin-top: toRem(30);
+                                    margin-top: 30px;
                                     .time-value {
                                         font-size: 12px;
                                         color: #999;
@@ -656,12 +685,12 @@ export default {
                                 }
                                 .item-text {
                                     display: flex;
-                                    padding: toRem(20) 0;
+                                    padding: 20px 0;
                                     .item-avatar {
                                         display: block;
-                                        width: toRem(40);
-                                        height: toRem(40);
-                                        margin-right: toRem(12);
+                                        width: 40px;
+                                        height: 40px;
+                                        margin-right: 12px;
                                     }
                                     .item-content {
                                         .item-content-drive {
@@ -711,13 +740,13 @@ export default {
                                         cursor: zoom-in;
                                         img {
                                             display: block;
-                                            max-width: toRem(200);
-                                            max-height: toRem(300);
+                                            max-width: 200px;
+                                            max-height: 300px;
                                             border-radius: 5px;
                                         }
                                     }
                                     .item-more {
-                                        margin-left: toRem(12);
+                                        margin-left: 12px;
                                         align-self: flex-end;
                                         .el-icon-more {
                                             cursor: pointer;
@@ -751,7 +780,7 @@ export default {
                                     &.self {
                                         justify-content: flex-end;
                                         .item-avatar {
-                                            margin-left: toRem(12);
+                                            margin-left: 12px;
                                             margin-right: 0;
                                         }
                                         .item-content-value {
@@ -761,7 +790,7 @@ export default {
                                             border-radius: 12px 12px 2px 12px;
                                         }
                                         .item-more {
-                                            margin-right: toRem(12);
+                                            margin-right: 12px;
                                             margin-left: 0;
                                         }
                                     }
@@ -771,8 +800,9 @@ export default {
                     }
                 }
                 .conversation-publish {
-                    height: toRem(200);
+                    flex: 1;
                     overflow: hidden;
+                    border-top: 1px solid #D9DEE4;
                     .publish-tool {
                         display: flex;
                         align-items: center;
@@ -797,16 +827,13 @@ export default {
                         }
                     }
                     .publish-button {
-                        flex-center();
                         position: absolute;
-                        bottom: toRem(20);
-                        right: toRem(20);
-                        width: toRem(90);
-                        height: toRem(30);
+                        bottom: 20px;
+                        right: 20px;
+                        width: 90px;
                         font-size: 14px;
                         color: #2C2C2C;
                         cursor: pointer;
-                        border: 1px solid #C8C8C8;
                         background: #fff;
                         border-radius: 3px;
                     }
@@ -851,53 +878,53 @@ export default {
             height: 100%;
             background: #fff;
             overflow-y: auto;
-            padding: 0 18px;
+            padding: 0 toRem(18);
             .nothing {
                 color: #aaa;
-                font-size: 14px;
-                margin-top: 20px;
+                font-size: toRem(14);
+                margin-top: toRem(20);
                 text-align: center;
             }
             .user-item {
                 display: flex;
                 width: 100%;
-                padding: 15px 0 10px;
+                padding: toRem(15) 0 toRem(10);
                 border-bottom: 1px solid #eee;
                 .el-badge__content {
                     border: none;
                 }
                 .item-avatar {
                     display: block;
-                    width: 44px;
-                    height: 44px;
+                    width: toRem(44);
+                    height: toRem(44);
                 }
                 .item-info {
                     flex: 1;
-                    margin-left: 10px;
+                    margin-left: toRem(10);
                     .info-header {
                         display: flex;
                         align-items: center;
                         width: 100%;
-                        margin: 2px 0 6px;
+                        margin: toRem(2) 0 toRem(6);
                         .info-username {
                             text-ellipsis();
-                            font-size: 16px;
+                            font-size: toRem(16);
                         }
                         .info-time {
                             color: #C8C8C8;
-                            font-size: 12px;
+                            font-size: toRem(12);
                             margin-left: auto;
-                            margin-right: 8px;
+                            margin-right: toRem(8);
                         }
                     }
                     .info-lastMsg {
                         display: flex;
                         align-items: center;
                         color: #9d9d9d;
-                        font-size: 12px;
+                        font-size: toRem(12);
                         .lastMsg-read {
                             white-space: nowrap;
-                            margin-right: 4px;
+                            margin-right: toRem(4);
                             &.unread {
                                 color: #CE1B10;
                             }
@@ -906,14 +933,14 @@ export default {
                             white-space: nowrap;
                             text-overflow: ellipsis;
                             overflow: hidden;
-                            width: 170px;
+                            width: toRem(170);
                         }
                     }
                     .info-content {
                         text-ellipsis();
-                        width: 170px;
+                        width: toRem(170);
                         color: #9D9D9D;
-                        font-size: 12px;
+                        font-size: toRem(12);
                     }
                 }
             }
@@ -927,7 +954,8 @@ export default {
             z-index: -1;
             width: 100%;
             height: 100%;
-            padding-top: 62px;
+            padding-top: toRem(62);
+            padding-bottom: $publishHeight;
             &.active {
                 z-index: 222;
             }
@@ -938,14 +966,14 @@ export default {
                 flex-center();
                 flex-direction: column;
                 position: absolute;
-                top: 10px;
+                top: toRem(10);
                 right: 0;
                 color: #fff;
-                font-size: 12px;
-                padding: 0 15px;
+                font-size: toRem(12);
+                padding: 0 toRem(15);
                 .backBtn-icon {
-                    font-size: 26px;
-                    margin-bottom: 2px;
+                    font-size: toRem(26);
+                    margin-bottom: toRem(2);
                 }
             }
             .conversation-container {
@@ -955,7 +983,7 @@ export default {
                 width: 100%;
                 height: 100%;
                 background: #fff;
-                box-shadow: inset 0 10px 10px -5px #000;
+                box-shadow: inset toRem(0 toRem(10) 10) toRem(-5) #000;
                 .conversation-avatar {
                     position: absolute;
                     left: 50%;
@@ -963,8 +991,8 @@ export default {
                     transform: translate3d(-50%, -75%, 0);
                     img {
                         display: block;
-                        width: 46px;
-                        height: 46px;
+                        width: toRem(46);
+                        height: toRem(46);
                         border-radius: 100%;
                     }
                 }
@@ -973,11 +1001,12 @@ export default {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
+                    background: #fff;
                     .conversation-title {
                         flex-center();
                         width: 100%;
-                        height: 60px;
-                        font-size: 16px;
+                        height: toRem(55);
+                        font-size: toRem(16);
                     }
                     .conversation-content {
                         position: relative;
@@ -988,68 +1017,68 @@ export default {
                             top: 0;
                             left: 0;
                             right: 0;
-                            padding: 0 20px;
+                            padding: 0 toRem(20);
                         }
                         .content-item-wrap {
                             &:first-child {
                                 .item-time {
-                                    margin-top: 10px;
+                                    margin-top: toRem(10);
                                 }
                             }
                             .item-time {
                                 flex-center();
-                                margin-top: 15px;
+                                margin-top: toRem(15);
                                 .time-value {
-                                    font-size: 12px;
+                                    font-size: toRem(12);
                                     color: #999;
                                     text-align: center;
-                                    line-height: 17px;
-                                    padding: 2px 9px;
+                                    line-height: toRem(17);
+                                    padding: toRem(2) toRem(9);
                                     background: #F2F6FB;
-                                    border-radius: 5px;
+                                    border-radius: toRem(5);
                                 }
                             }
                             .item-text {
                                 display: flex;
-                                padding: 20px 0;
+                                padding: toRem(20) 0;
                                 .item-avatar {
                                     display: none;
                                 }
                                 .item-content-value {
                                     color: $contentColor;
-                                    font-size: 14px;
-                                    line-height: 20px;
+                                    font-size: toRem(14);
+                                    line-height: toRem(20);
                                     word-break: break-all;
-                                    padding: 10px 12px;
+                                    padding: toRem(10) toRem(12);
                                     border: 1px solid #8E8E8E;
                                     background: #F3F3F3;
-                                    border-radius: 2px 12px 12px 12px;
+                                    border-radius: toRem(2) toRem(12) toRem(12) toRem(12);
                                 }
                                 .item-image {
                                     img {
                                         display: block;
-                                        max-width: 200px;
-                                        max-height: 300px;
-                                        border-radius: 5px;
+                                        max-width: toRem(200);
+                                        max-height: toRem(300);
+                                        border-radius: toRem(5);
                                     }
                                 }
                                 .item-more {
-                                    margin-left: 12px;
+                                    margin-left: toRem(12);
                                     align-self: flex-end;
                                     .el-icon-more {
                                         visibility: hidden;
                                         width: 100%;
                                         text-align: center;
-                                        font-size: 16px;
+                                        font-size: toRem(16);
                                         color: #fff;
-                                        padding: 1px 2px;
+                                        padding: toRem(1) toRem(2);
                                         background: #ccc;
-                                        border-radius: 5px;
-                                        margin-bottom: 5px;
+                                        border-radius: toRem(5);
+                                        margin-bottom: toRem(5);
                                     }
                                     .item-read {
                                         color: #A3A3A3;
-                                        font-size: 12px;
+                                        font-size: toRem(12);
                                         display: block;
                                         white-space: nowrap;
                                         &.unread {
@@ -1058,34 +1087,34 @@ export default {
                                     }
                                 }
                                 .item-content-drive {
-                                    border-radius: 2px 12px 12px 12px;
+                                    border-radius: toRem(2) toRem(12) toRem(12) toRem(12);
                                     overflow: hidden;
                                     background-color: #dedede;
-                                    font-size: 14px;
+                                    font-size: toRem(14);
                                     cursor: pointer;
                                     .drive-header {
                                         display: flex;
                                         align-items: center;
                                         width: 100%;
-                                        height: 26px;
+                                        height: toRem(26);
                                         background-color: #CE1B10;
-                                        padding: 3px 12px;
+                                        padding: toRem(3) toRem(12);
                                         color: #fff;
                                     }
                                     .drive-content {
                                         display: flex;
                                         align-items: center;
-                                        padding: 10px;
+                                        padding: toRem(10);
                                         background: url('~@/assets/img/yuyuebj.png') top left no-repeat;
                                         background-size: 100% 100%;
                                         img {
                                             display: block;
-                                            width: 60px;
-                                            height: 60px;
+                                            width: toRem(60);
+                                            height: toRem(60);
                                         }
                                         .content-text {
                                             color: #000;
-                                            margin-left: 10px;
+                                            margin-left: toRem(10);
                                         }
                                     }
                                 }
@@ -1099,14 +1128,14 @@ export default {
                                 &.self {
                                     justify-content: flex-end;
                                     .item-content-value {
-                                        border-radius: 12px 12px 2px 12px;
+                                        border-radius: toRem(12) toRem(12) toRem(2) toRem(12);
                                     }
-                                    .item-content-drive{
+                                    .item-content-drive {
                                         cursor: none;
-                                        border-radius: 12px 12px 2px 12px;
+                                        border-radius: toRem(12) toRem(12) toRem(2) toRem(12);
                                     }
                                     .item-more {
-                                        margin-right: 12px;
+                                        margin-right: toRem(12);
                                         margin-left: 0;
                                     }
                                 }
@@ -1115,33 +1144,42 @@ export default {
                     }
                 }
                 .conversation-publish {
-                    position: relative;
+                    position: fixed;
+                    bottom: 0;
+                    z-index: 99;
                     display: flex;
                     flex-direction: column;
                     width: 100%;
-                    height: 120px;
-                    padding: 10px 0;
+                    height: $publishHeight;
+                    font-size: 0;
                     border-top: 1px solid #dcdfe6;
+                    background: #fff;
                     overflow: hidden;
                     .publish-tool {
-                        height: 24px;
-                        margin-bottom: 8px;
+                        position: absolute;
+                        top: 0;
+                        width: 100%;
+                        min-height: fit-content;
+                        margin: toRem(10) 0;
+                        line-height: 1;
                         .tool-item {
                             display: inline-block;
                             color: #888;
-                            font-size: 24px;
-                            margin-left: 18px;
+                            font-size: toRem(24);
+                            margin-left: toRem(18);
                             &.active {
                                 color: #56c7c6;
                             }
                         }
                     }
                     .publish-content {
-                        flex: 1;
+                        width: 100%;
+                        height: 100%;
+                        padding-top: toRem(44);
                         textarea {
                             width: 82%;
-                            font-size: 16px;
-                            padding: 0 18px;
+                            font-size: toRem(16);
+                            padding: 0 toRem(18);
                             border: none;
                         }
                     }
@@ -1150,10 +1188,10 @@ export default {
                     }
                     .publish-icon {
                         position: absolute;
-                        bottom: 20px;
-                        right: 20px;
+                        bottom: toRem(20);
+                        right: toRem(20);
                         color: #888888;
-                        font-size: 32px;
+                        font-size: toRem(32);
                     }
                 }
             }
