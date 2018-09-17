@@ -592,8 +592,8 @@ $publishHeight = toRem(100);
                     height: 44px;
                 }
                 .item-info {
-                    flex: 1;
-                    margin-left: 10px;
+                    width: 245px;
+                    padding-left: 10px;
                     .info-header {
                         display: flex;
                         align-items: center;
@@ -601,6 +601,7 @@ $publishHeight = toRem(100);
                         margin: 2px 0 6px;
                         .info-username {
                             text-ellipsis();
+                            width: 80%;
                             font-size: 16px;
                         }
                         .info-time {
