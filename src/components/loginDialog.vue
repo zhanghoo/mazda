@@ -32,8 +32,8 @@ export default {
         return {
             visible: true,
             form: {
-                username: '18820147127',
-                password: 'LIAN18820147127'
+                username: '',
+                password: ''
             }
         }
     },
@@ -60,13 +60,13 @@ export default {
 <style lang="stylus">
 .login-dialog {
     .el-dialog {
-        border-radius: toRem(4);
+        border-radius: 4px;
     }
     .el-dialog__body {
-        padding: toRem(30);
+        padding: 30px;
         .login-logo {
             display: block;
-            margin: 0 auto toRem(30);
+            margin: 0 auto 30px;
         }
         .login-form {
             .el-form-item {
@@ -76,7 +76,7 @@ export default {
                     height: 42px;
                     line-height: 42px;
                     border: 1px solid $borderColor;
-                    border-radius: toRem(6);
+                    border-radius: 6px;
                     &:focus {
                         border: 1px solid $appColor;
                     }
@@ -115,8 +115,16 @@ export default {
                 color: #808080;
                 font-size: 12px;
                 text-align: center;
+                a {
+                    color: $appColor;
+                }
             }
         }
+    }
+}
+@media screen and (max-width: 980px) {
+    .login-dialog {
+        display: none;
     }
 }
 </style>

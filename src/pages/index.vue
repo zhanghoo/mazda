@@ -9,10 +9,12 @@
                     <div class="user-status">在线</div>
                 </div>
                 <div class="menu-tabs">
-                    <div class="tabs-item" v-for="(item, index) in tabOptions" :key="index" :class="{'active': tabActive === index}" @click="handleTabActive(item, index)">
+                    <el-badge v-for="(item, index) in tabOptions" :key="index" :value="item.count" :hidden="!item.count || item.count === 0">
+                    <div class="tabs-item" :class="{'active': tabActive === index}" @click="handleTabActive(item, index)">
                         <div :class="[item.icon, 'item-icon']"></div>
                         <div class="item-label">{{item.label}}</div>
                     </div>
+                    </el-badge>
                     <el-dropdown trigger="click" class="tabs-dropdown">
                         <div class="tabs-item">
                             <div class="item-icon my-icon-menu"></div>
@@ -29,7 +31,7 @@
             <div class="index-right">
                 <div class="index-title">马自达在线顾问</div>
                 <div class="right-container">
-                    <my-chat v-if="initChat" chatType="kfu" :initData="$store.state.initData" :userInfo="$store.state.userInfo" :json="conversationList"></my-chat>
+                    <my-chat v-if="initChat" chatType="kfu" :initData="$store.state.initData" :userInfo="$store.state.userInfo" :json="conversationList"  @unreadCount="(val) => tabOptions[0].count = val"></my-chat>
                 </div>
             </div>
         </div>
@@ -57,7 +59,8 @@ export default {
             tabOptions: [
                 {
                     icon: 'my-icon-message',
-                    label: '历史会话'
+                    label: '历史会话',
+                    count: 0
                 },
                 {
                     icon: 'my-icon-searchFile',
@@ -180,8 +183,8 @@ export default {
 }
 </script>
 <style lang='stylus'>
-$chatHeight = toRem(710);
-$chatTitleHeight = toRem(50);
+$chatHeight = 710px;
+$chatTitleHeight = 50px;
 @media screen and (min-width: 981px) {
     #index {
         position: relative;
@@ -201,7 +204,7 @@ $chatTitleHeight = toRem(50);
             overflow: hidden;
             .index-menu {
                 position: relative;
-                width: toRem(88);
+                width: 88px;
                 height: 100%;
                 background: #0D0D0E;
                 padding-top: $chatTitleHeight;
@@ -223,6 +226,13 @@ $chatTitleHeight = toRem(50);
                     }
                 }
                 .menu-tabs {
+                    .el-badge{
+                        width: 100%;
+                        height: 100%;
+                        .el-badge__content.is-fixed{
+                            right: 25px;
+                        }
+                    }
                     .tabs-dropdown {
                         width: 100%;
                         position: absolute;
@@ -289,7 +299,7 @@ $chatTitleHeight = toRem(50);
                     padding-top: $chatTitleHeight;
                     .index-user {
                         position: relative;
-                        width: toRem(310);
+                        width: 310px;
                         height: 100%;
                         border-right: 1px solid $borderColor;
                         background: $bgColor;
@@ -346,29 +356,29 @@ $chatTitleHeight = toRem(50);
                             .conversation-main {
                                 display: flex;
                                 flex-direction: column;
-                                height: toRem(450);
+                                height: 450px;
                                 .conversation-title {
                                     text-ellipsis();
                                     display: flex;
                                     align-items: center;
                                     width: 100%;
-                                    height: toRem(40);
+                                    height: 40px;
                                     font-size: 16px;
                                     padding-left: 20px;
                                 }
                                 .conversation-content {
                                     width: 100%;
-                                    height: toRem(410);
+                                    height: 410px;
                                     border-bottom: 1px solid #D9DEE4;
                                     overflow-y: auto;
-                                    padding: 0 toRem(20);
+                                    padding: 0 20px;
                                     .content-item {
                                         display: flex;
-                                        margin: toRem(20) 0;
+                                        margin: 20px 0;
                                         .item-avatar {
                                             display: block;
-                                            width: toRem(40);
-                                            height: toRem(40);
+                                            width: 40px;
+                                            height: 40px;
                                         }
                                         .item-content {
                                             color: $contentColor;
@@ -379,7 +389,7 @@ $chatTitleHeight = toRem(50);
                                         }
                                         .item-more {
                                             display: none;
-                                            margin-left: toRem(12);
+                                            margin-left: 12px;
                                         }
                                         &.text {
                                             display: flex;
@@ -390,7 +400,7 @@ $chatTitleHeight = toRem(50);
                                                 }
                                             }
                                             .item-avatar {
-                                                margin-right: toRem(12);
+                                                margin-right: 12px;
                                             }
                                             .item-content {
                                                 border-radius: 2px 12px 12px 12px;
@@ -406,20 +416,20 @@ $chatTitleHeight = toRem(50);
                                                 }
                                             }
                                             .item-avatar {
-                                                margin-left: toRem(12);
+                                                margin-left: 12px;
                                             }
                                             .item-content {
                                                 border-radius: 12px 12px 2px 12px;
                                             }
                                             .item-more {
-                                                margin-right: toRem(12);
+                                                margin-right: 12px;
                                             }
                                         }
                                         &.time {
                                             flex-center();
-                                            margin: toRem(30) 0 toRem(20);
+                                            margin: 30px 0 20px;
                                             &:first-child {
-                                                margin: toRem(10) 0 toRem(20);
+                                                margin: 10px 0 20px;
                                             }
                                             .item-time {
                                                 font-size: 12px;
@@ -434,7 +444,7 @@ $chatTitleHeight = toRem(50);
                                 }
                             }
                             .conversation-publish {
-                                height: toRem(260);
+                                height: 260px;
                                 overflow-y: auto;
                                 .publish-tool {
                                     display: flex;
@@ -470,7 +480,7 @@ $chatTitleHeight = toRem(50);
                 right: 0;
                 z-index: 99;
                 width: 100%;
-                height: 55px;
+                height: toRem(55);
                 background: #0D0D0E;
                 .menu-user, .menu-setting {
                     display: none;
@@ -481,31 +491,37 @@ $chatTitleHeight = toRem(50);
                     justify-content: space-around;
                     width: 100%;
                     height: 100%;
+                    .el-badge{
+                        height: 100%;
+                        .el-badge__content.is-fixed{
+                            right: toRem(25);
+                        }
+                    }
                     .tabs-item {
                         display: flex;
                         flex-direction: column;
                         justify-content: center;
                         text-align: center;
                         height: 100%;
-                        padding: 0 18px;
+                        padding: 0 toRem(18);
                         color: #fff;
-                        font-size: 24px;
+                        font-size: toRem(24);
                         &.active {
                             background: $appColor;
                         }
                         .item-label {
                             white-space: nowrap;
-                            font-size: 12px;
-                            margin-top: 2px;
+                            font-size: toRem(12);
+                            margin-top: toRem(2);
                         }
                     }
                 }
             }
             .index-right {
                 height: 100vh;
-                padding-top: 62px;
+                padding-top: toRem(62);
                 background: #000 url('~@/assets/img/mazidalogo.png') no-repeat top left;
-                background-size: 56px auto;
+                background-size: toRem(56) auto;
                 overflow: hidden;
                 .index-title {
                     display: none;
@@ -514,8 +530,8 @@ $chatTitleHeight = toRem(50);
                     width: 100%;
                     height: 100%;
                     background: #fff;
-                    border-top-left-radius: 8px;
-                    border-top-right-radius: 8px;
+                    border-top-left-radius: toRem(8);
+                    border-top-right-radius: toRem(8);
                     overflow: hidden;
                 }
             }

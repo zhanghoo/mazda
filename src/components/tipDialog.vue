@@ -68,11 +68,11 @@ export default {
         .el-dialog {
             width: 80% !important;
             margin: 0 !important;
-            .el-dialog__header{
-                padding: 10px 20px;
+            .el-dialog__header {
+                padding: toRem(10) toRem(20);
             }
             .el-dialog__body {
-                padding: 20px;
+                padding: toRem(20);
             }
         }
     }

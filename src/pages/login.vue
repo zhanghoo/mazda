@@ -1,23 +1,23 @@
 <template>
     <div id="login">
-        <div class="login-container">
+        <div class="login-container" v-loading="loading" element-loading-background="rgba(0, 0, 0, 0.5)">
             <div class="login-title"></div>
             <el-form class="login-form" :model="form" @submit.native.prevent="verify">
                 <el-form-item class="username">
-                    <el-input v-model="form.username" placeholder="请输入用户名" />
+                    <el-input v-model="form.username" placeholder="请输入用户名" auto-complete />
                     <span class="input-icon prepend-icon">
                         <i class="my-icon-username"></i>
                     </span>
                 </el-form-item>
                 <el-form-item class="password">
-                    <el-input v-model="form.password" placeholder="请输入密码" type="password" />
+                    <el-input v-model="form.password" placeholder="请输入密码" type="password"/>
                     <span class="input-icon prepend-icon">
                         <i class="my-icon-lock"></i>
                     </span>
                 </el-form-item>
-                <div class="cacheInfo">
-                    <el-checkbox v-model="cacheInfo">记住用户名和密码</el-checkbox>
-                </div>
+                <!-- <div class="cacheInfo">
+                    <el-checkbox v-model="cacheInfo">记住用户名</el-checkbox>
+                </div> -->
                 <el-input class="login-btn" :class="{'active': form.username && form.password}" type="submit" value="登录" />
             </el-form>
         </div>
@@ -29,10 +29,11 @@ export default {
     data() {
         return {
             form: {
-                username: 'huzhou03',
-                password: '123456'
+                username: '',
+                password: ''
             },
-            cacheInfo: false
+            loading: false
+            // cacheInfo: false
         }
     },
     methods: {
@@ -42,12 +43,14 @@ export default {
             } else if (!this.form.password) {
                 this.$message.error('请输入密码')
             } else {
+                this.loading = true
                 this.$store.dispatch('kfuLogin', this.form).then(() => {
+                    this.loading = false
                     this.$router.push({ name: 'index' })
                     this.$message.success('登录成功')
                 }).catch(err => {
                     console.log('登录失败', err)
-                    this.$message.success('登录失败：' + err)
+                    this.$message.error('登录失败：' + err)
                 })
             }
         }
@@ -117,7 +120,6 @@ export default {
             }
             .cacheInfo {
                 padding: 0 6px;
-                margin-bottom: 22px;
                 .el-checkbox {
                     font-size: 12px;
                     .el-checkbox__label {
@@ -126,6 +128,7 @@ export default {
                 }
             }
             .login-btn {
+                margin-top: 22px;
                 &.active {
                     input {
                         color: #fff;
@@ -152,10 +155,10 @@ export default {
         .login-container {
             width: 100%;
             min-height: auto;
-            padding: 30px 16px 50px;
+            padding: toRem(30) toRem(16) toRem(50);
             .login-title {
-                height: 80px;
-                margin-bottom: 20px;
+                height: toRem(80);
+                margin-bottom: toRem(20);
             }
         }
     }
