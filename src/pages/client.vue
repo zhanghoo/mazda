@@ -72,6 +72,10 @@ export default {
     mounted() {
         this.getCustomList()
     },
+    beforeRouteLeave(to, from, next) {
+        this.loginOut()
+        next()
+    },
     methods: {
         // 获取在线客服
         getCustomList() {
@@ -85,6 +89,7 @@ export default {
                         this.initJIM()
                         this.customList = res.data.filter(item => item.online)
                     } else {
+                        this.$message.warning('客服不在线，请您留言')
                         this.$router.push({ name: 'message' })
                     }
                 }
@@ -110,8 +115,18 @@ export default {
                                 this.userInfo = user.data
                                 this.syncConversation()
                             }).catch(err => {
-                                this.$message.error('登录失败')
                                 console.log('登录失败', err)
+                                // 880103   user not exist  用户不存在
+                                // 用户不存在, 前往注册
+                                if (err.code === 880103) {
+                                    JimApi.register(form).then(() => {
+                                        this.initJIM()
+                                    })
+                                } else if (err.code === 88107) {
+                                    JimApi.loginOut()
+                                } else {
+                                    this.$message.error('登录失败')
+                                }
                             })
                         })
                     } else {

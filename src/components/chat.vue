@@ -42,7 +42,17 @@
                                 <div class="item-text" v-if="item.content.from_id === conversationActiveData.username">
                                     <img class="item-avatar" src="~@/assets/img/mazidakefu.png">
                                     <div class="item-content" v-if="item.content.msg_body.text">
-                                        <div class="item-content-value">{{item.content.msg_body.text}}</div>
+                                        <div class="item-content-drive" v-if="item.content.msg_body.text === driveText">
+                                            <div class="drive-header">预约试驾</div>
+                                            <div class="drive-content">
+                                                <img src="~@/assets/img/logo.png">
+                                                <div class="content-text">
+                                                    邀请您留下资料到店试驾
+                                                    <br> 我们会尽快给您安排
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="item-content-value" v-else>{{item.content.msg_body.text}}</div>
                                     </div>
                                     <div class="item-image" v-else-if="item.local_url">
                                         <img :src="item.local_url" @click="handlePreviewImage(item, index)">
@@ -68,7 +78,17 @@
                                         <div class="item-read" :class="[item.read ? '' : 'unread']">{{item.read ? '已读' : '未读'}}</div>
                                     </div>
                                     <div class="item-content" v-if="item.content.msg_body.text">
-                                        <div class="item-content-value">{{item.content.msg_body.text}}</div>
+                                        <div class="item-content-drive" v-if="item.content.msg_body.text === driveText">
+                                            <div class="drive-header">预约试驾</div>
+                                            <div class="drive-content">
+                                                <img src="~@/assets/img/logo.png">
+                                                <div class="content-text">
+                                                    邀请您留下资料到店试驾
+                                                    <br> 我们会尽快给您安排
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="item-content-value" v-else>{{item.content.msg_body.text}}</div>
                                     </div>
                                     <div class="item-image" v-else-if="item.local_url">
                                         <img :src="item.local_url" @click="handlePreviewImage(item, index)">
@@ -82,14 +102,14 @@
                 <div class="conversation-publish">
                     <div class="publish-tool">
                         <my-emoji @selected="handleEmojiSelected"></my-emoji>
-
                         <label class="tool-item my-icon-picture" for="upload-pic">
                             <input id="upload-pic" style="display: none;" type="file" accept="image/*" @change="handleSendSinglePic($event)">
                         </label>
+                        <a v-if="isKfu" class="tool-item my-icon-car" title="预约试驾" @click="handleSendSingleMsg(driveText)"></a>
                     </div>
-                    <el-input class="publish-content" v-model="content" placeholder="请输入文字" type="textarea" resize="none" @keyup.enter.native="handleSendSingleMsg" :rows="3"></el-input>
-                    <div class="publish-button" @click="handleSendSingleMsg">发送</div>
-                    <div class="publish-icon my-icon-share" @click="handleSendSingleMsg"></div>
+                    <el-input class="publish-content" v-model="content" placeholder="请输入文字" type="textarea" resize="none" @keyup.enter.native="handleSendSingleMsg('')" :rows="3"></el-input>
+                    <div class="publish-button" @click="handleSendSingleMsg('')">发送</div>
+                    <div class="publish-icon my-icon-share" @click="handleSendSingleMsg('')"></div>
                 </div>
             </div>
             <div class="conversation-nothing">
@@ -107,7 +127,7 @@
 <script>
 import JIM from '@/api/jim'
 import { formatTime } from '@/utils'
-import { saveMsg, getHistory, kfuLoginStatus, kfuInfo } from '@/api'
+import { saveMsg, kfuLoginStatus, KfuId } from '@/api'
 import myEmoji from '@/components/emoji'
 export default {
     name: 'chat',
@@ -137,7 +157,8 @@ export default {
             previewImageList: [],
             wecomeBefore: '感谢您关注官方体验平台，平台为您提供操作简洁的在线赏车订车服务，并可通过金牌导购答疑解惑，使您在家中就能轻松选择预订爱车。',
             tipDialogType: 0,
-            tipDialogVisible: false
+            tipDialogVisible: false,
+            driveText: '[[[预约试驾]]]'
         }
     },
     computed: {
@@ -254,8 +275,15 @@ export default {
             })
         },
         // 发送文字消息
-        handleSendSingleMsg() {
-            JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, this.content).then(data => {
+        handleSendSingleMsg(content = '') {
+            let text = ''
+            if (content) {
+                text = content
+            } else {
+                text = this.content
+            }
+            console.log('text', text)
+            JIM.sendSingleMsg(this.initData.appkey, this.conversationActiveData.username, text).then(data => {
                 console.log('发送文字消息：sendSingleMsg', data)
                 if (this.conversationActiveData.retractText) {
                     this.$set(conversation, 'retractText', '')
@@ -269,13 +297,15 @@ export default {
                 let params = {
                     'kfusername': this.conversationActiveData.username,
                     'username': this.userInfo.username,
-                    'message': this.content,
+                    'message': text,
                     'msg_type': 1,
                     'user_type': 1,
                     'timestamp': (new Date()).getTime()
                 }
                 saveMsg(params).then(res => {
-                    this.content = ''
+                    if (!content) {
+                        this.content = ''
+                    }
                 })
             })
         },
@@ -350,18 +380,18 @@ export default {
         // 打开对话框
         handleHistoryActive(activeUser) {
             if (activeUser && activeUser.username) {
-                getHistory(activeUser.username).then(res => {
-                    console.log('history', res)
-                })
-                kfuInfo(14).then(info => {
-                    console.log('单个客服信息', info)
-                })
-                kfuLoginStatus(activeUser.username).then(status => {
-                    console.log('客服状态查询', status)
-                    // if (status && !status.online) {
-                    //     this.$router.push({name: 'message'})
-                    // }
-                })
+                if (!this.isKfu) {
+                    kfuLoginStatus(activeUser.username).then(status => {
+                        console.log('客服状态查询', status)
+                        if (status && !status.online) {
+                            KfuId(activeUser.username).then(res => {
+                                let id = res.responseBody
+                                this.$message.warning('客服不在线，请您留言')
+                                this.$router.push({ path: '/message', query: { 'id': id } })
+                            })
+                        }
+                    })
+                }
                 let conversation = this.conversationFind(activeUser.username)
                 let index = this.conversationList.findIndex(item => item.username === activeUser.username)
                 if (conversation && index > -1) {
@@ -373,6 +403,7 @@ export default {
                         this.handleMsgReport(conversation.username, msgs_id)
                     }
                 } else {
+                    // 新建对话框
                     let nowTime = new Date().getTime()
                     let newConversation = {
                         ...activeUser,
@@ -476,17 +507,14 @@ export default {
                 this.$el.querySelector('.conversation-content').scrollTop = conversationHeight
             })
         },
+        // 处理选中表情
         handleEmojiSelected(emoji) {
             this.content += emoji
         },
         // 重新登录
         reLogin() {
-            if (this.isKfu) {
-                JIM.loginOut()
-                window.location.reload()
-            } else {
-                window.location.reload()
-            }
+            JIM.loginOut()
+            window.location.reload()
         }
     }
 }
@@ -629,27 +657,6 @@ export default {
                                 .item-text {
                                     display: flex;
                                     padding: toRem(20) 0;
-                                    &:hover {
-                                        .item-more {
-                                            .el-icon-more {
-                                                visibility: visible;
-                                            }
-                                        }
-                                    }
-                                    &.self {
-                                        justify-content: flex-end;
-                                        .item-avatar {
-                                            margin-left: toRem(12);
-                                            margin-right: 0;
-                                        }
-                                        .item-content-value {
-                                            border-radius: 12px 12px 2px 12px;
-                                        }
-                                        .item-more {
-                                            margin-right: toRem(12);
-                                            margin-left: 0;
-                                        }
-                                    }
                                     .item-avatar {
                                         display: block;
                                         width: toRem(40);
@@ -657,6 +664,38 @@ export default {
                                         margin-right: toRem(12);
                                     }
                                     .item-content {
+                                        .item-content-drive {
+                                            border-radius: 2px 12px 12px 12px;
+                                            overflow: hidden;
+                                            background-color: #dedede;
+                                            font-size: 14px;
+                                            cursor: pointer;
+                                            .drive-header {
+                                                display: flex;
+                                                align-items: center;
+                                                width: 100%;
+                                                height: 26px;
+                                                background-color: #CE1B10;
+                                                padding: 3px 12px;
+                                                color: #fff;
+                                            }
+                                            .drive-content {
+                                                display: flex;
+                                                align-items: center;
+                                                padding: 10px;
+                                                background: url('~@/assets/img/yuyuebj.png') top left no-repeat;
+                                                background-size: 100% 100%;
+                                                img {
+                                                    display: block;
+                                                    width: 60px;
+                                                    height: 60px;
+                                                }
+                                                .content-text {
+                                                    color: #000;
+                                                    margin-left: 10px;
+                                                }
+                                            }
+                                        }
                                         .item-content-value {
                                             color: $contentColor;
                                             font-size: 14px;
@@ -700,6 +739,30 @@ export default {
                                             &.unread {
                                                 color: #CE1B10;
                                             }
+                                        }
+                                    }
+                                    &:hover {
+                                        .item-more {
+                                            .el-icon-more {
+                                                visibility: visible;
+                                            }
+                                        }
+                                    }
+                                    &.self {
+                                        justify-content: flex-end;
+                                        .item-avatar {
+                                            margin-left: toRem(12);
+                                            margin-right: 0;
+                                        }
+                                        .item-content-value {
+                                            border-radius: 12px 12px 2px 12px;
+                                        }
+                                        .item-content-drive {
+                                            border-radius: 12px 12px 2px 12px;
+                                        }
+                                        .item-more {
+                                            margin-right: toRem(12);
+                                            margin-left: 0;
                                         }
                                     }
                                 }
@@ -952,23 +1015,6 @@ export default {
                                 .item-avatar {
                                     display: none;
                                 }
-                                &:hover, &:active {
-                                    .item-more {
-                                        .el-icon-more {
-                                            visibility: visible;
-                                        }
-                                    }
-                                }
-                                &.self {
-                                    justify-content: flex-end;
-                                    .item-content-value {
-                                        border-radius: 12px 12px 2px 12px;
-                                    }
-                                    .item-more {
-                                        margin-right: 12px;
-                                        margin-left: 0;
-                                    }
-                                }
                                 .item-content-value {
                                     color: $contentColor;
                                     font-size: 14px;
@@ -1009,6 +1055,59 @@ export default {
                                         &.unread {
                                             color: #CE1B10;
                                         }
+                                    }
+                                }
+                                .item-content-drive {
+                                    border-radius: 2px 12px 12px 12px;
+                                    overflow: hidden;
+                                    background-color: #dedede;
+                                    font-size: 14px;
+                                    cursor: pointer;
+                                    .drive-header {
+                                        display: flex;
+                                        align-items: center;
+                                        width: 100%;
+                                        height: 26px;
+                                        background-color: #CE1B10;
+                                        padding: 3px 12px;
+                                        color: #fff;
+                                    }
+                                    .drive-content {
+                                        display: flex;
+                                        align-items: center;
+                                        padding: 10px;
+                                        background: url('~@/assets/img/yuyuebj.png') top left no-repeat;
+                                        background-size: 100% 100%;
+                                        img {
+                                            display: block;
+                                            width: 60px;
+                                            height: 60px;
+                                        }
+                                        .content-text {
+                                            color: #000;
+                                            margin-left: 10px;
+                                        }
+                                    }
+                                }
+                                &:hover, &:active {
+                                    .item-more {
+                                        .el-icon-more {
+                                            visibility: visible;
+                                        }
+                                    }
+                                }
+                                &.self {
+                                    justify-content: flex-end;
+                                    .item-content-value {
+                                        border-radius: 12px 12px 2px 12px;
+                                    }
+                                    .item-content-drive{
+                                        cursor: none;
+                                        border-radius: 12px 12px 2px 12px;
+                                    }
+                                    .item-more {
+                                        margin-right: 12px;
+                                        margin-left: 0;
                                     }
                                 }
                             }

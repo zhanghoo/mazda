@@ -25,11 +25,6 @@ var JimInit = {
             JIM.login(form).onSuccess(res => {
                 resolve(res)
             }).onFail(err => {
-                // 880103   user not exist  用户不存在
-                // 用户不存在, 前往注册
-                if (err.code === 880103) {
-                    JimApi.register(form)
-                }
                 reject(err)
             })
         })
@@ -46,12 +41,14 @@ var JimInit = {
         return new Promise((resolve, reject) => {
             JIM.register(form).onSuccess(res => {
                 console.log('注册成功')
-                JimApi.login(form)
                 resolve(res)
             }).onFail(err => {
                 reject(err)
             })
         })
+    },
+    isLogin: function() {
+        return JIM.isLogin()
     }
 }
 // 会话管理

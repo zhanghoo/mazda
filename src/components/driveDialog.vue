@@ -49,7 +49,7 @@
     </el-dialog>
 </template>
 <script>
-// import { getDrive } from '@/api'
+import { getDrive } from '@/api'
 export default {
     name: 'drive',
     data() {
@@ -66,16 +66,16 @@ export default {
         }
     },
     mounted() {
-        // let params = {
-        //     advisors_id: 14,
-        //     p: 1,
-        //     num: 20
-        // }
-        // getDrive(params).then(res => {
-        //     console.log('试驾清单', res)
-        // }).catch(err => {
-        //     console.log(err)
-        // })
+        let params = {
+            advisors_id: 14,
+            p: 1,
+            num: 20
+        }
+        getDrive(params).then(res => {
+            console.log('试驾清单', res)
+        }).catch(err => {
+            console.log(err)
+        })
     }
 }
 </script>

@@ -7,7 +7,7 @@ let config = {
     'user': 'http://dealers.faw-mazda.com/chat/index/getuser', // 登录用户信息
     'advisors': 'http://dealers.faw-mazda.com/chat/index/getadvisors', // 客服在线列表
     'saveMsg': 'http://dealers.faw-mazda.com/chat/index/savemsg', // 保存消息
-    'drive': 'https://dealers.faw-mazda.com/api/dealer/get_reserve',
+    'drive': 'https://dealers.faw-mazda.com/api/dealer/get_reserve', // 试驾清单
     'message': 'http://dealers.faw-mazda.com/api/dealer/message', // 提交留言
     'province': 'http://dealers.faw-mazda.com/api/dealer/get_province', // 省
     'city': 'http://dealers.faw-mazda.com/api/dealer/get_city', // 市
@@ -17,8 +17,7 @@ let config = {
     'kfuLogin': 'http://dealers.faw-mazda.com/index.php/chat/index/login_log', // 客服登录
     'kfuLoginOut': 'http://dealers.faw-mazda.com/index.php/chat/index/logout_log', // 客服登出
     'kfuLoginStatus': 'http://dealers.faw-mazda.com/index.php/chat/index/getkfonline', // 单个客服在线状态
-    'kfuId': 'http://mchat.faw-mazda.com/mazda/advisor/'
-
+    'kfuId': 'http://mchat.faw-mazda.com/mazda/advisor/' // 获取客服id
 }
 
 // 登录
@@ -31,7 +30,7 @@ export function getInitParams() {
     let res = request(config.init)
     return res
 }
-// 当前用户
+// 获取游客用户登录数据
 export function getUser() {
     let res = request(config.user)
     return res
@@ -53,7 +52,7 @@ export function saveMsg(params) {
 export function postMessage(data) {
     let params = {
         'dealer_id': 194,
-        'advisors_id': 14,
+        'advisors_id': data.id || 0,
         'province': data.province,
         'city': data.city,
         'name': data.name,
@@ -80,18 +79,23 @@ export function getDrive(query) {
     return res
 }
 // 获取历史记录
-export function getHistory(username) {
-    let res = request(config.history, { username })
-    return res
-}
+// export function getHistory(username) {
+//     let res = request(config.history, { username })
+//     return res
+// }
 // 客服登录
 export function kfuLogin(username) {
     let res = request(config.kfuLogin, { username })
     return res
 }
 // 客服id
-export function getKfuId(username) {
+export function KfuId(username) {
     let res = request(config.kfuId + username)
+    return res
+}
+// 单个客服信息
+export function kfuInfo(advisor_id) {
+    let res = request(config.kfuInfo, { advisor_id })
     return res
 }
 // 客服登出
@@ -102,11 +106,6 @@ export function kfuLoginOut(username) {
 // 单个客服在线状态
 export function kfuLoginStatus(username) {
     let res = request(config.kfuLoginStatus, { username })
-    return res
-}
-// 单个客服信息
-export function kfuInfo(advisor_id) {
-    let res = request(config.kfuInfo, { advisor_id })
     return res
 }
 // 设置客服配置
