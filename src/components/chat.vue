@@ -601,10 +601,11 @@ $publishHeight = toRem(100);
                         margin: 2px 0 6px;
                         .info-username {
                             text-ellipsis();
-                            width: 80%;
+                            max-width: 70%;
                             font-size: 16px;
                         }
                         .info-time {
+                            min-width: fit-content;
                             color: #C8C8C8;
                             font-size: 12px;
                             margin-left: auto;
@@ -908,6 +909,7 @@ $publishHeight = toRem(100);
                 }
                 .item-info {
                     flex: 1;
+                    max-width: 85%;
                     margin-left: toRem(10);
                     .info-header {
                         display: flex;
@@ -916,9 +918,11 @@ $publishHeight = toRem(100);
                         margin: toRem(2) 0 toRem(6);
                         .info-username {
                             text-ellipsis();
+                            max-width: 70%;
                             font-size: toRem(16);
                         }
                         .info-time {
+                            min-width: fit-content;
                             color: #C8C8C8;
                             font-size: toRem(12);
                             margin-left: auto;
